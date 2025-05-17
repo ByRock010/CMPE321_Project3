@@ -115,3 +115,9 @@ def arbiters_home(request):
 
 def dbmanagers_home(request):
     return render(request, 'chess/dbmanagers_home.html')
+
+def view_match_history(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Match history coming soon'})
+
+def view_player_stats(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Statistics will be shown here'})

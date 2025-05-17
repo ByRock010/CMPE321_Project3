@@ -3,10 +3,10 @@
 <head><title>Player Homepage</title></head>
 <body>
   <h1>Player Dashboard</h1>
-  <ul>
-    <li><a href="#">View Match History</a></li>
-    <li><a href="#">View My Stats</a></li>
-  </ul>
+    <ul>
+    <li><a href="{% url 'view_match_history' %}">View My Match History</a></li>
+    <li><a href="{% url 'view_player_stats' %}">View Statistics</a></li>
+    </ul>
   <p><a href="{% url 'home' %}">← Back to Main</a></p>
 </body>
 </html>

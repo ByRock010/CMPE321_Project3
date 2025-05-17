@@ -11,4 +11,7 @@ urlpatterns = [
     path('coaches/', views.coaches_home, name='coaches_home'),
     path('arbiters/', views.arbiters_home, name='arbiters_home'),
     path('dbmanagers/', views.dbmanagers_home, name='dbmanagers_home'),
+    path('players/match_history/', views.view_match_history, name='view_match_history'),
+    path('players/stats/', views.view_player_stats, name='view_player_stats'),
+
 ]
