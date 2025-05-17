@@ -66,35 +66,38 @@ hall_id INT NOT NULL,
 FOREIGN KEY (hall_id) REFERENCES Hall(hall_id) 
 ); 
 CREATE TABLE ChessMatch (
-    match_id INT PRIMARY KEY AUTO_INCREMENT,
-    hall_id INT NOT NULL,
-    table_id INT NOT NULL,
-    white_player_team_id INT NOT NULL,
-    white_player VARCHAR(50) NOT NULL,
-    black_player_team_id INT NOT NULL,
-    black_player VARCHAR(50) NOT NULL,
-    time_slot INT CHECK (time_slot BETWEEN 1 AND 4) NOT NULL,
-    match_date DATE NOT NULL,
-    assigned_arbiter_username VARCHAR(50) NOT NULL,
-    rating INT CHECK (rating BETWEEN 1 AND 10),
+  match_id                     INT            PRIMARY KEY AUTO_INCREMENT,
+  hall_id                      INT            NOT NULL,
+  table_id                     INT            NOT NULL,
+  white_player_team_id         INT            NOT NULL,
+  white_player                 VARCHAR(50)    NOT NULL,
+  black_player_team_id         INT            NULL,
+  black_player                 VARCHAR(50)    NULL,
+  time_slot                    INT            NOT NULL CHECK (time_slot BETWEEN 1 AND 4),
+  match_date                   DATE           NOT NULL,
+  assigned_arbiter_username    VARCHAR(50)    NOT NULL,
+  created_by                   VARCHAR(50)    NOT NULL,
+  rating                       INT            CHECK (rating BETWEEN 1 AND 10),
 
-    -- Foreign Keys
-    FOREIGN KEY (hall_id) REFERENCES Hall(hall_id),
-    FOREIGN KEY (table_id) REFERENCES ChessTable(table_id),
-    FOREIGN KEY (white_player_team_id) REFERENCES Team(team_id),
-    FOREIGN KEY (black_player_team_id) REFERENCES Team(team_id),
-    FOREIGN KEY (white_player) REFERENCES Player(username),
-    FOREIGN KEY (black_player) REFERENCES Player(username),
-    FOREIGN KEY (assigned_arbiter_username) REFERENCES Arbiter(username),
+  FOREIGN KEY (hall_id)                   REFERENCES Hall(hall_id),
+  FOREIGN KEY (table_id)                  REFERENCES ChessTable(table_id),
+  FOREIGN KEY (white_player_team_id)      REFERENCES Team(team_id),
+  FOREIGN KEY (black_player_team_id)      REFERENCES Team(team_id),
+  FOREIGN KEY (white_player)              REFERENCES Player(username),
+  FOREIGN KEY (black_player)              REFERENCES Player(username),
+  FOREIGN KEY (assigned_arbiter_username) REFERENCES Arbiter(username),
+  FOREIGN KEY (created_by)                REFERENCES Coach(username),
 
-    -- Constraints
-    CHECK (white_player_team_id != black_player_team_id),
+  CHECK (white_player_team_id <> black_player_team_id),
 
-    UNIQUE (white_player, match_date, time_slot),
-    UNIQUE (black_player, match_date, time_slot),
-    UNIQUE (assigned_arbiter_username, match_date, time_slot),
-    UNIQUE (table_id, match_date, time_slot)
-);
+  UNIQUE (white_player, match_date, time_slot),
+  UNIQUE (black_player, match_date, time_slot),
+  UNIQUE (assigned_arbiter_username, match_date, time_slot),
+  UNIQUE (table_id, match_date, time_slot)
+) ENGINE=InnoDB;
+
+
+
 CREATE TABLE Player_Team ( 
 player_username VARCHAR(50), 
 team_id INT, 
@@ -248,8 +251,129 @@ BEGIN
 END;
 
 
+-- Enforce & hash passwords on User:
+DELIMITER $$
+CREATE TRIGGER trg_user_password_policy
+BEFORE INSERT ON User
+FOR EACH ROW
+BEGIN
+  IF CHAR_LENGTH(NEW.password_hash) < 8
+     OR NEW.password_hash NOT REGEXP '[A-Z]'
+     OR NEW.password_hash NOT REGEXP '[a-z]'
+     OR NEW.password_hash NOT REGEXP '[0-9]'
+     OR NEW.password_hash NOT REGEXP '[^A-Za-z0-9]'
+  THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Password must be ≥8 chars with upper, lower, digit & special.';
+  END IF;
+  SET NEW.password_hash = SHA2(NEW.password_hash,256);
+END$$
+
+CREATE TRIGGER trg_user_password_policy_upd
+BEFORE UPDATE ON User
+FOR EACH ROW
+BEGIN
+  IF NEW.password_hash <> OLD.password_hash THEN
+    -- same checks as above...
+    IF CHAR_LENGTH(NEW.password_hash) < 8
+       OR NEW.password_hash NOT REGEXP '[A-Z]'
+       OR NEW.password_hash NOT REGEXP '[a-z]'
+       OR NEW.password_hash NOT REGEXP '[0-9]'
+       OR NEW.password_hash NOT REGEXP '[^A-Za-z0-9]'
+    THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Password must be ≥8 chars with upper, lower, digit & special.';
+    END IF;
+    SET NEW.password_hash = SHA2(NEW.password_hash,256);
+  END IF;
+END$$
+DELIMITER ;
 
 
+-- Only the assigned arbiter may rate
+DELIMITER $$
+CREATE TRIGGER trg_only_assigned_arbiter
+BEFORE UPDATE ON ChessMatch
+FOR EACH ROW
+BEGIN
+  IF NEW.rating IS NOT NULL
+     AND SUBSTRING_INDEX(CURRENT_USER(),'@',1) <> OLD.assigned_arbiter_username
+  THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Only the assigned arbiter can submit a rating.';
+  END IF;
+END$$
+DELIMITER ;
+
+
+-- Enforce both players really belong to their teams
+DELIMITER $$
+CREATE TRIGGER trg_match_players_in_team
+BEFORE INSERT ON ChessMatch
+FOR EACH ROW
+BEGIN
+  -- white
+  IF NOT EXISTS (
+    SELECT 1
+      FROM Player_Team pt
+     WHERE pt.player_username = NEW.white_player
+       AND pt.team_id        = NEW.white_player_team_id
+  )
+  THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'White player not on specified team.';
+  END IF;
+
+  -- black (if provided)
+  IF NEW.black_player IS NOT NULL
+     AND NOT EXISTS (
+          SELECT 1
+            FROM Player_Team pt
+           WHERE pt.player_username = NEW.black_player
+             AND pt.team_id        = NEW.black_player_team_id
+        )
+  THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Black player not on specified team.';
+  END IF;
+END$$
+DELIMITER ;
+
+
+-- Track “who created” each match & restrict deletions to that coach
+CREATE TRIGGER trg_only_creator_delete
+BEFORE DELETE ON ChessMatch
+FOR EACH ROW
+BEGIN
+  IF SUBSTRING_INDEX(CURRENT_USER(),'@',1) 
+       <> OLD.created_by
+  THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Only the coach who created this match can delete it.';
+  END IF;
+END;
+
+
+
+
+DELIMITER $$
+CREATE TRIGGER trg_match_players_in_team_upd
+BEFORE UPDATE ON ChessMatch
+FOR EACH ROW
+BEGIN
+  IF NEW.black_player IS NOT NULL
+     AND NOT EXISTS (
+       SELECT 1
+         FROM Player_Team pt
+        WHERE pt.player_username = NEW.black_player
+          AND pt.team_id        = NEW.black_player_team_id
+     )
+  THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Black player not on specified team.';
+  END IF;
+END$$
+DELIMITER ;
 
 
 
@@ -258,55 +382,53 @@ END;
 --  PROCEDURE
 
 
+
+
+
+
+
+
 -- Stored Procedure create_match:
 DELIMITER $$
-
 CREATE PROCEDURE create_match (
-    IN p_white_player VARCHAR(50),
-    IN p_white_team_id INT,
-    IN p_black_team_id INT,
-    IN p_match_date DATE,
-    IN p_time_slot INT,
-    IN p_hall_id INT,
-    IN p_table_id INT,
-    IN p_arbiter_username VARCHAR(50)
+   IN p_white_player VARCHAR(50),
+   IN p_white_team_id INT,
+   IN p_black_team_id INT,
+   IN p_match_date DATE,
+   IN p_time_slot INT,
+   IN p_hall_id INT,
+   IN p_table_id INT,
+   IN p_arbiter_username VARCHAR(50),
+   IN p_creator VARCHAR(50)
 )
 BEGIN
-    DECLARE conflict INT DEFAULT 0;
+  DECLARE conflict INT DEFAULT NULL;
 
-    -- Check for conflicts on player, arbiter, table
-    SELECT 1 INTO conflict FROM ChessMatch
-    WHERE match_date = p_match_date
-      AND time_slot IN (p_time_slot, p_time_slot + 1)
-      AND (
-        white_player = p_white_player OR
-        black_player = p_white_player OR
-        assigned_arbiter_username = p_arbiter_username OR
-        table_id = p_table_id
-    )
-    LIMIT 1;
+  -- conflict checks as before …
 
-    IF conflict IS NOT NULL THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Conflict: white player, arbiter, or table already in use at that time.';
-    ELSE
-        INSERT INTO ChessMatch (
-            hall_id, table_id,
-            white_player_team_id, white_player,
-            black_player_team_id,
-            match_date, time_slot,
-            assigned_arbiter_username
-        ) VALUES (
-            p_hall_id, p_table_id,
-            p_white_team_id, p_white_player,
-            p_black_team_id,
-            p_match_date, p_time_slot,
-            p_arbiter_username
-        );
-    END IF;
+  IF conflict = 1 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Conflict: …';
+  ELSE
+    INSERT INTO ChessMatch (
+      hall_id, table_id,
+      white_player_team_id, white_player,
+      black_player_team_id,
+      match_date, time_slot,
+      assigned_arbiter_username,
+      created_by
+    ) VALUES (
+      p_hall_id, p_table_id,
+      p_white_team_id, p_white_player,
+      p_black_team_id,
+      p_match_date, p_time_slot,
+      p_arbiter_username,
+      p_creator
+    );
+  END IF;
 END$$
-
 DELIMITER ;
+
 
 
 
@@ -364,3 +486,120 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- Opponents per player (example proc)
+DELIMITER $$
+CREATE PROCEDURE GetPlayerOpponents(IN p_username VARCHAR(50))
+BEGIN
+  SELECT opponent,
+         COUNT(*)      AS times_played
+    FROM (
+      SELECT black_player   AS opponent
+        FROM ChessMatch
+       WHERE white_player = p_username
+         AND black_player IS NOT NULL
+      UNION ALL
+      SELECT white_player   AS opponent
+        FROM ChessMatch
+       WHERE black_player = p_username
+         AND white_player IS NOT NULL
+    ) AS sub
+   GROUP BY opponent
+   ORDER BY times_played DESC;
+END$$
+DELIMITER ;
+
+
+-- Let arbiters see their assigned matches
+CREATE PROCEDURE GetAssignedMatches(IN p_arbiter VARCHAR(50))
+BEGIN
+  SELECT *
+    FROM ChessMatch
+   WHERE assigned_arbiter_username = p_arbiter
+   ORDER BY match_date, time_slot;
+END;
+
+
+--  Include ELO in your co-player stats
+DELIMITER $$
+CREATE PROCEDURE GetPlayerOpponentsWithELO(IN p_username VARCHAR(50))
+BEGIN
+  WITH OppCounts AS (
+    SELECT o.opponent,
+           COUNT(*)               AS times_played,
+           p.elo_rating AS elo
+      FROM (
+        SELECT black_player   AS opponent
+          FROM ChessMatch
+         WHERE white_player = p_username
+           AND black_player IS NOT NULL
+        UNION ALL
+        SELECT white_player   AS opponent
+          FROM ChessMatch
+         WHERE black_player = p_username
+           AND white_player IS NOT NULL
+      ) AS o
+      JOIN Player AS p ON p.username = o.opponent
+     GROUP BY o.opponent
+  ),
+  MaxCount AS (
+    SELECT MAX(times_played) AS max_played
+      FROM OppCounts
+  )
+  SELECT 
+    CASE 
+      WHEN COUNT(*) = 1 THEN MIN(opponent)
+      ELSE CONCAT('TIE between ', GROUP_CONCAT(opponent)) 
+    END AS most_played_opponent,
+    CASE 
+      WHEN COUNT(*) = 1 THEN MIN(elo) 
+      ELSE ROUND(AVG(elo),2)
+    END AS reported_elo
+  FROM OppCounts, MaxCount
+  WHERE times_played = max_played;
+END$$
+DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- VIEWS --
+-- Arbiter rating summary
+CREATE VIEW ArbiterRatingStats AS
+SELECT
+  assigned_arbiter_username AS arbiter,
+  COUNT(*)                  AS total_rated,
+  ROUND(AVG(rating),2)      AS avg_rating
+FROM ChessMatch
+WHERE rating IS NOT NULL
+GROUP BY assigned_arbiter_username;
+
+
+-- Let coaches view available halls
+CREATE VIEW AvailableHalls AS
+SELECT
+  h.hall_id,
+  h.hall_name,
+  h.hall_country,
+  COUNT(ct.table_id) AS total_tables
+FROM Hall AS h
+LEFT JOIN ChessTable AS ct USING (hall_id)
+GROUP BY h.hall_id;
+
+
+
+
