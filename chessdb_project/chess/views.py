@@ -1,6 +1,16 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db import connection
 from django.http import Http404
+from django import forms
+from django.contrib import messages
+
+
+class AssignBlackForm(forms.Form):    # ilk kez form kullandım la bilmiyodum böyle bi şey oldğunu
+    black_player = forms.CharField(max_length=50)
+    black_team_id = forms.IntegerField()
+
+
+
 
 def match_list(request):
     with connection.cursor() as cur:
@@ -63,3 +73,29 @@ def create_match(request):
         form = MatchCreateForm()
 
     return render(request, 'chess/create_match.html', {'form': form})
+
+
+
+def assign_black_player(request, match_id):
+    if request.method == 'POST':
+        form = AssignBlackForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            try:
+                with connection.cursor() as cur:
+                    cur.callproc("assign_black_player", [
+                        match_id,
+                        data['black_player'],
+                        data['black_team_id']
+                    ])
+                messages.success(request, "Black player assigned successfully!")
+                return redirect('match_detail', match_id=match_id)
+            except Exception as e:
+                messages.error(request, f"Error: {str(e)}")
+    else:
+        form = AssignBlackForm()
+
+    return render(request, 'chess/assign_black.html', {
+        'form': form,
+        'match_id': match_id
+    })

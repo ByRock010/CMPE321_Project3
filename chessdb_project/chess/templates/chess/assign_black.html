@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title>Assign Black Player</title></head>
+<body>
+  <h1>Assign Black Player to Match {{ match_id }}</h1>
+
+  {% if messages %}
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Assign Black Player</button>
+  </form>
+
+  <p><a href="{% url 'match_detail' match_id %}">← Back to Match</a></p>
+</body>
+</html>
