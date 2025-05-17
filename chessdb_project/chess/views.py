@@ -121,3 +121,30 @@ def view_match_history(request):
 
 def view_player_stats(request):
     return render(request, 'chess/placeholder.html', {'message': 'Statistics will be shown here'})
+
+def delete_match(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Match deletion coming soon'})
+
+def view_available_halls(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Available halls will be listed here'})
+
+def view_assigned_matches(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Assigned matches will be shown here'})
+
+def submit_rating(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Rating submission form coming soon'})
+
+def view_rating_stats(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Your average ratings and match count will be here'})
+
+def add_player(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Player creation form coming soon'})
+
+def add_coach(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Coach creation form coming soon'})
+
+def add_arbiter(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Arbiter creation form coming soon'})
+
+def rename_hall(request):
+    return render(request, 'chess/placeholder.html', {'message': 'Hall rename operation coming soon'})

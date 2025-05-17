@@ -3,15 +3,12 @@
 <head><title>Database Manager Homepage</title></head>
 <body>
   <h1>Database Manager Dashboard</h1>
-
   <ul>
-    <li><a href="#">View All Users</a></li>
-    <li><a href="#">Create New Player</a></li>
-    <li><a href="#">Create New Coach</a></li>
-    <li><a href="#">Create New Arbiter</a></li>
-    <li><a href="#">Update Hall Names</a></li>
+    <li><a href="{% url 'add_player' %}">Add New Player</a></li>
+    <li><a href="{% url 'add_coach' %}">Add New Coach</a></li>
+    <li><a href="{% url 'add_arbiter' %}">Add New Arbiter</a></li>
+    <li><a href="{% url 'rename_hall' %}">Rename a Hall</a></li>
   </ul>
-
   <p><strong>Note:</strong> You cannot add new Database Managers.</p>
   <p><a href="{% url 'home' %}">← Back to Main</a></p>
 </body>

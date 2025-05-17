@@ -3,10 +3,11 @@
 <head><title>Coach Homepage</title></head>
 <body>
   <h1>Coach Dashboard</h1>
-  <ul>
-    <li><a href="#">Create New Match</a></li>
-    <li><a href="#">Assign Black Player</a></li>
-  </ul>
+    <ul>
+    <li><a href="{% url 'create_match' %}">Create a Match</a></li>
+    <li><a href="{% url 'delete_match' %}">Delete a Match</a></li>
+    <li><a href="{% url 'view_available_halls' %}">View Available Halls</a></li>
+    </ul>
   <p><a href="{% url 'home' %}">← Back to Main</a></p>
 </body>
 </html>
