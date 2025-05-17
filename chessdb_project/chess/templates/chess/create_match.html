@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><title>Create Match</title></head>
+<body>
+  <h1>Create New Match</h1>
+
+    {% if messages %}
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+    {% endif %}
+
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Match</button>
+  </form>
+
+  <p><a href="{% url 'match_list' %}">← Back to match list</a></p>
+</body>
+</html>

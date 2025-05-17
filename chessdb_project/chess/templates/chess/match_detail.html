@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head><title>Match Detail</title></head>
+<body>
+  <h1>Match {{ match.match_id }}</h1>
+  <p><strong>Date:</strong> {{ match.match_date }} | Slot: {{ match.time_slot }}</p>
+  <p><strong>White:</strong> {{ match.white_player }}</p>
+  <p><strong>Black:</strong> {{ match.black_player|default:"(TBD)" }}</p>
+  <p><strong>Rating:</strong> {{ match.rating|default:"Not Rated" }}</p>
+  <p><a href="{% url 'match_list' %}">← Back to list</a></p>
+</body>
+</html>
