@@ -99,3 +99,19 @@ def assign_black_player(request, match_id):
         'form': form,
         'match_id': match_id
     })
+
+
+def homepage(request):
+    return render(request, 'chess/home.html')
+
+def players_home(request):
+    return render(request, 'chess/players_home.html')
+
+def coaches_home(request):
+    return render(request, 'chess/coaches_home.html')
+
+def arbiters_home(request):
+    return render(request, 'chess/arbiters_home.html')
+
+def dbmanagers_home(request):
+    return render(request, 'chess/dbmanagers_home.html')

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>Homepage</title></head>
+<body>
+  <h1>Welcome to Chess Tournament System</h1>
+
+  <h2>Navigation</h2>
+    <ul>
+    <li><a href="{% url 'players_home' %}">Players</a></li>
+    <li><a href="{% url 'coaches_home' %}">Coaches</a></li>
+    <li><a href="{% url 'arbiters_home' %}">Arbiters</a></li>
+    <li><a href="{% url 'dbmanagers_home' %}">Database Managers</a></li>
+    <li><a href="{% url 'match_list' %}">All Matches</a></li>
+    </ul>
+</body>
+</html>
