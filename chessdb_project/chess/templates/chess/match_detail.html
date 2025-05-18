@@ -6,6 +6,9 @@
   <p><strong>Date:</strong> {{ match.match_date }} | Slot: {{ match.time_slot }}</p>
   <p><strong>White:</strong> {{ match.white_player }}</p>
   <p><strong>Black:</strong> {{ match.black_player|default:"(TBD)" }}</p>
+  {% if not match.black_player %}
+  <p><a href="{% url 'assign_black' match.match_id %}">Assign Black Player</a></p>
+  {% endif %}
   <p><strong>Rating:</strong> {{ match.rating|default:"Not Rated" }}</p>
   <p><a href="{% url 'match_list' %}">← Back to list</a></p>
 </body>

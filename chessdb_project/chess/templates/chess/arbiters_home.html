@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>Arbiter Homepage</title></head>
+<body>
+  <h1>Arbiter Dashboard</h1>
+    <ul>
+    <li><a href="{% url 'view_assigned_matches' %}">View Assigned Matches</a></li>
+    <li><a href="{% url 'submit_rating' %}">Submit Rating</a></li>
+    <li><a href="{% url 'view_rating_stats' %}">View Rating Statistics</a></li>
+    </ul>
+  <p><a href="{% url 'home' %}">← Back to Main</a></p>
+</body>
+</html>

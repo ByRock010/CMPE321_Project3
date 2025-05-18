@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Player</title>
+</head>
+<body>
+    <h2>Add Player</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br>
+        
+        <label>Password:</label><br>
+        <input type="text" name="password" required><br>
+        <label>Name:</label><br>
+        <input type="text" name="name" required><br>
+        <label>Surname:</label><br>
+        <input type="text" name="surname" required><br>
+        <label>Nationality:</label><br>
+        <input type="text" name="nationality" required><br>
+        <label>Date of Birth:</label><br>
+        <input type="date" name="date_of_birth" required><br>
+
+        <label>ELO Rating (must be over 1000):</label><br>
+        <input type="number" name="elo_rating" min="1001" required><br>
+
+        <label>FIDE ID (must be unique):</label><br>
+        <input type="text" name="fide_id" required><br>
+
+        <label>Title ID (must exist in Title table):</label><br>
+        <input type="number" name="title_id" required><br><br>
+
+        <input type="submit" value="Add Player">
+    </form>
+</body>
+</html>
