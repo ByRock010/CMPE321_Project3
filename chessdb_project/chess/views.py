@@ -340,4 +340,35 @@ def add_arbiter(request):
     return render(request, 'chess/addarbiter.html')
 
 def rename_hall(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Hall rename operation coming soon'})
+    if request.session.get("role") != "Admin":
+        messages.error(request, "Only database managers can rename halls.")
+        return redirect("login")
+
+    message = None
+
+    if request.method == "POST":
+        old_name = request.POST.get("old_name", "").strip()
+        new_name = request.POST.get("new_name", "").strip()
+
+        if not old_name or not new_name:
+            messages.error(request, "Both old and new hall names are required.")
+        else:
+            try:
+                with connection.cursor() as cursor:
+                    # Check if hall with old_name exists
+                    cursor.execute("SELECT 1 FROM Hall WHERE hall_name = %s", [old_name])
+                    if cursor.fetchone() is None:
+                        messages.error(request, f"No hall found with name '{old_name}'.")
+                    else:
+                        # Check if new_name already exists
+                        cursor.execute("SELECT 1 FROM Hall WHERE hall_name = %s", [new_name])
+                        if cursor.fetchone():
+                            messages.error(request, f"A hall with the name '{new_name}' already exists.")
+                        else:
+                            cursor.execute("UPDATE Hall SET hall_name = %s WHERE hall_name = %s", [new_name, old_name])
+                            messages.success(request, f"Hall successfully renamed from '{old_name}' to '{new_name}'.")
+            except Exception as e:
+                messages.error(request, f"Rename failed: {str(e)}")
+
+    return render(request, 'chess/rename_hall.html')
+
