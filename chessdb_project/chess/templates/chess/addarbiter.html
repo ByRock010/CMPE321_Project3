@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Arbiter</title>
+</head>
+<body>
+    <h2>Add Arbiter</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br>
+        
+        <label>Password:</label><br>
+        <input type="text" name="password" required><br>
+        <label>Name:</label><br>
+        <input type="text" name="name" required><br>
+        <label>Surname:</label><br>
+        <input type="text" name="surname" required><br>
+        <label>Nationality:</label><br>
+        <input type="text" name="nationality" required><br>
+        <label>Date of Birth:</label><br>
+        <input type="date" name="date_of_birth" required><br>
+        <label>Experience:</label><br>
+        <select name="experience">
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+        </select><br>
+        
+        <input type="submit" value="Add Arbiter">
+    </form>
+</body>
+</html>

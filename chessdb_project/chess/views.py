@@ -180,7 +180,7 @@ def add_player(request):
         title= request.POST.get('title_id')
         
         with connection.cursor() as cursor:
-            cursor.callproc('AddUser', [username, password, name, surname, nationality])
+            cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Player'])
             cursor.callproc('AddPlayer', [username, date_of_birth, elo, fide_id, title])
             result = cursor.fetchone()
             if not result:
@@ -190,10 +190,38 @@ def add_player(request):
     return render(request, 'chess/addplayer.html')
 
 def add_coach(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Coach creation form coming soon'})
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        name = request.POST.get('name')
+        surname = request.POST.get('surname')
+        nationality = request.POST.get('nationality')
+        
+        with connection.cursor() as cursor:
+            cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Coach'])
+            cursor.callproc('AddCoach', [username])
+            result = cursor.fetchone()
+            if not result:
+                messages.error(request, "ERROR")
+                    
+    return render(request, 'chess/addcoach.html')
 
 def add_arbiter(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Arbiter creation form coming soon'})
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        name = request.POST.get('name')
+        surname = request.POST.get('surname')
+        nationality = request.POST.get('nationality')
+        experience = request.POST.get('experience')
+        
+        with connection.cursor() as cursor:
+            cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Arbiter'])
+            cursor.callproc('AddArbiter', [username, experience])
+            result = cursor.fetchone()
+            if not result:
+                messages.error(request, "ERROR")
+    return render(request, 'chess/addarbiter.html')
 
 def rename_hall(request):
     return render(request, 'chess/placeholder.html', {'message': 'Hall rename operation coming soon'})
