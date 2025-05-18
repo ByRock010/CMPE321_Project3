@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Available Halls</title>
+</head>
+<body>
+  <h2>Available Halls</h2>
+
+  {% if messages %}
+    <ul>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if halls %}
+    <table border="1">
+      <tr>
+        <th>ID</th>
+        <th>Hall Name</th>
+        <th>Country</th>
+      </tr>
+      {% for hall in halls %}
+      <tr>
+        <td>{{ hall.hall_id }}</td>
+        <td>{{ hall.hall_name }}</td>
+        <td>{{ hall.hall_country }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>No halls found.</p>
+  {% endif %}
+
+  <a href="{% url 'coaches_home' %}">Back to Coach Home</a>
+</body>
+</html>

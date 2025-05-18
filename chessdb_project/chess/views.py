@@ -190,7 +190,20 @@ def delete_match(request):
     return render(request, 'chess/placeholder.html', {'message': 'Match deletion coming soon'})
 
 def view_available_halls(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Available halls will be listed here'})
+    if request.session.get("role") != "Coach":
+        messages.error(request, "Only coaches can view available halls.")
+        return redirect("login")
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT hall_id, hall_name, hall_country FROM Hall ORDER BY hall_id")
+            halls = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
+    except Exception as e:
+        messages.error(request, f"Failed to load halls: {str(e)}")
+        halls = []
+
+    return render(request, 'chess/available_halls.html', {'halls': halls})
+
 
 def view_assigned_matches(request):
     username = request.session.get("username")
