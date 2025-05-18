@@ -140,7 +140,7 @@ CREATE PROCEDURE AddUser(
   IN password VARCHAR(100), 
   IN name VARCHAR(50), 
   IN surname VARCHAR(50), 
-  IN nationality VARCHAR(50),
+  IN nationality VARCHAR(50)
 )
 BEGIN
     INSERT INTO User (username, password_hash, name, surname, nationality,role)
@@ -175,7 +175,8 @@ DELIMITER ;
 
 
 
--- Prevent overlapping matches for white player:
+DELIMITER $$
+
 CREATE TRIGGER trg_no_white_player_overlap
 BEFORE INSERT ON ChessMatch
 FOR EACH ROW
@@ -187,12 +188,15 @@ BEGIN
       AND (white_player = NEW.white_player OR black_player = NEW.white_player)
   ) THEN
     SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'White player is already in a match during this time slot.';
+      SET MESSAGE_TEXT = 'White player is already in a match during this time slot.';
   END IF;
-END;
+END$$
+
+DELIMITER ;
 
 
--- Prevent overlapping matches for black player:
+DELIMITER $$
+
 CREATE TRIGGER trg_no_black_player_overlap
 BEFORE INSERT ON ChessMatch
 FOR EACH ROW
@@ -204,11 +208,15 @@ BEGIN
       AND (white_player = NEW.black_player OR black_player = NEW.black_player)
   ) THEN
     SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Black player is already in a match during this time slot.';
+      SET MESSAGE_TEXT = 'Black player is already in a match during this time slot.';
   END IF;
-END;
+END$$
 
--- Prevent overlapping matches for arbiter:
+DELIMITER ;
+
+
+DELIMITER $$
+
 CREATE TRIGGER trg_no_arbiter_overlap
 BEFORE INSERT ON ChessMatch
 FOR EACH ROW
@@ -220,11 +228,15 @@ BEGIN
       AND assigned_arbiter_username = NEW.assigned_arbiter_username
   ) THEN
     SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Arbiter is already assigned to another match during this time slot.';
+      SET MESSAGE_TEXT = 'Arbiter is already assigned to another match during this time slot.';
   END IF;
-END;
+END$$
 
--- Prevent overlapping matches for table:
+DELIMITER ;
+
+
+DELIMITER $$
+
 CREATE TRIGGER trg_no_table_overlap
 BEFORE INSERT ON ChessMatch
 FOR EACH ROW
@@ -236,36 +248,48 @@ BEGIN
       AND table_id = NEW.table_id
   ) THEN
     SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'The table is already assigned to another match during this time slot.';
+      SET MESSAGE_TEXT = 'The table is already assigned to another match during this time slot.';
   END IF;
-END;
+END$$
+
+DELIMITER ;
 
 
 
--- Prevent Arbiter from Re-rating a Match:
+
+DELIMITER $$
+
 CREATE TRIGGER trg_no_double_rating
 BEFORE UPDATE ON ChessMatch
 FOR EACH ROW
 BEGIN
   IF OLD.rating IS NOT NULL AND NEW.rating IS NOT NULL AND OLD.rating != NEW.rating THEN
     SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Match has already been rated. Ratings cannot be changed.';
+      SET MESSAGE_TEXT = 'Match has already been rated. Ratings cannot be changed.';
   END IF;
-END;
+END$$
 
--- Prevent rating before match date:
+DELIMITER ;
+
+
+DELIMITER $$
+
 CREATE TRIGGER trg_rating_only_after_match_date
 BEFORE UPDATE ON ChessMatch
 FOR EACH ROW
 BEGIN
   IF NEW.rating IS NOT NULL AND NEW.match_date > CURDATE() THEN
     SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Cannot rate a match before its scheduled date.';
+      SET MESSAGE_TEXT = 'Cannot rate a match before its scheduled date.';
   END IF;
-END;
+END$$
+
+DELIMITER ;
 
 
--- BEFORE INSERT Trigger: Coach Can Only Assign Players From Their Own Team:
+
+DELIMITER $$
+
 CREATE TRIGGER trg_coach_assigns_only_own_player
 BEFORE INSERT ON ChessMatch
 FOR EACH ROW
@@ -274,16 +298,20 @@ BEGIN
     SELECT 1 FROM Player_Team pt
     JOIN Coach_Team_Agreement ca ON pt.team_id = ca.team_id
     WHERE pt.player_username = NEW.white_player
-      AND ca.coach_username = CURRENT_USER() -- or pass coach via backend
+      AND ca.coach_username = SUBSTRING_INDEX(CURRENT_USER(), '@', 1)
       AND NEW.match_date BETWEEN ca.contract_start AND ca.contract_finish
   ) THEN
     SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Coach can only assign a player from their own team (contract-valid).';
+      SET MESSAGE_TEXT = 'Coach can only assign a player from their own team (contract-valid).';
   END IF;
-END;
+END$$
+
+DELIMITER ;
 
 
--- BEFORE INSERT Trigger: Prevent Overlapping Coach Contracts:
+
+DELIMITER $$
+
 CREATE TRIGGER trg_no_overlapping_coach_contracts
 BEFORE INSERT ON Coach_Team_Agreement
 FOR EACH ROW
@@ -297,13 +325,17 @@ BEGIN
       )
   ) THEN
     SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Coach has an overlapping team contract.';
+      SET MESSAGE_TEXT = 'Coach has an overlapping team contract.';
   END IF;
-END;
+END$$
+
+DELIMITER ;
+
 
 
 -- Enforce & hash passwords on User:
 DELIMITER $$
+
 CREATE TRIGGER trg_user_password_policy
 BEFORE INSERT ON User
 FOR EACH ROW
@@ -312,33 +344,39 @@ BEGIN
      OR NEW.password_hash NOT REGEXP '[A-Z]'
      OR NEW.password_hash NOT REGEXP '[a-z]'
      OR NEW.password_hash NOT REGEXP '[0-9]'
-     OR NEW.password_hash NOT REGEXP '[^A-Za-z0-9]'
-  THEN
+     OR NEW.password_hash NOT REGEXP '[^A-Za-z0-9]' THEN
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Password must be ≥8 chars with upper, lower, digit & special.';
   END IF;
-  SET NEW.password_hash = SHA2(NEW.password_hash,256);
+
+  SET NEW.password_hash = SHA2(NEW.password_hash, 256);
 END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
 
 CREATE TRIGGER trg_user_password_policy_upd
 BEFORE UPDATE ON User
 FOR EACH ROW
 BEGIN
   IF NEW.password_hash <> OLD.password_hash THEN
-    -- same checks as above...
     IF CHAR_LENGTH(NEW.password_hash) < 8
        OR NEW.password_hash NOT REGEXP '[A-Z]'
        OR NEW.password_hash NOT REGEXP '[a-z]'
        OR NEW.password_hash NOT REGEXP '[0-9]'
-       OR NEW.password_hash NOT REGEXP '[^A-Za-z0-9]'
-    THEN
+       OR NEW.password_hash NOT REGEXP '[^A-Za-z0-9]' THEN
       SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Password must be ≥8 chars with upper, lower, digit & special.';
     END IF;
-    SET NEW.password_hash = SHA2(NEW.password_hash,256);
+
+    SET NEW.password_hash = SHA2(NEW.password_hash, 256);
   END IF;
 END$$
+
 DELIMITER ;
+
 
 
 -- Only the assigned arbiter may rate
@@ -392,17 +430,20 @@ DELIMITER ;
 
 
 -- Track “who created” each match & restrict deletions to that coach
+DELIMITER $$
+
 CREATE TRIGGER trg_only_creator_delete
 BEFORE DELETE ON ChessMatch
 FOR EACH ROW
 BEGIN
-  IF SUBSTRING_INDEX(CURRENT_USER(),'@',1) 
-       <> OLD.created_by
-  THEN
+  IF SUBSTRING_INDEX(CURRENT_USER(), '@', 1) <> OLD.created_by THEN
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Only the coach who created this match can delete it.';
   END IF;
-END;
+END$$
+
+DELIMITER ;
+
 
 
 
@@ -562,14 +603,18 @@ END$$
 DELIMITER ;
 
 
--- Let arbiters see their assigned matches
+DELIMITER $$
+
 CREATE PROCEDURE GetAssignedMatches(IN p_arbiter VARCHAR(50))
 BEGIN
   SELECT *
     FROM ChessMatch
-   WHERE assigned_arbiter_username = p_arbiter
-   ORDER BY match_date, time_slot;
-END;
+    WHERE assigned_arbiter_username = p_arbiter
+    ORDER BY match_date, time_slot;
+END$$
+
+DELIMITER ;
+
 
 
 --  Include ELO in your co-player stats
