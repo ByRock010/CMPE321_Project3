@@ -1,4 +1,5 @@
 <h2>Delete Match</h2>
+
 <form method="post">
   {% csrf_token %}
   <label for="match_id">Match ID:</label>
@@ -13,3 +14,5 @@
     {% endfor %}
   </ul>
 {% endif %}
+
+<p><a href="{% url 'coaches_home' %}">← Back to Coach Home</a></p>
