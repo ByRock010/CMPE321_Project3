@@ -156,7 +156,35 @@ def view_match_history(request):
     return render(request, 'chess/placeholder.html', {'message': 'Match history coming soon'})
 
 def view_player_stats(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Statistics will be shown here'})
+    username = request.session.get("username")
+    if not username:
+        messages.error(request, "You must be logged in.")
+        return redirect('login')
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.callproc("GetPlayerOpponentsWithELO", [username])
+            result = cursor.fetchone()
+
+            if result:
+                most_played_opponent = result[0]
+                reported_elo = result[1]
+            else:
+                most_played_opponent = "No opponents found"
+                reported_elo = "N/A"
+
+    except Exception as e:
+        messages.error(request, f"Error retrieving stats: {str(e)}")
+        most_played_opponent = "Error"
+        reported_elo = "Error"
+
+    return render(request, 'chess/player_stats.html', {
+        'username': username,
+        'most_played_opponent': most_played_opponent,
+        'reported_elo': reported_elo
+    })
+
+
 
 def delete_match(request):
     return render(request, 'chess/placeholder.html', {'message': 'Match deletion coming soon'})

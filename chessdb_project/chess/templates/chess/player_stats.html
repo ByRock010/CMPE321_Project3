@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Player Statistics</title></head>
+<body>
+    <h1>Statistics for {{ username }}</h1>
+
+    <p><strong>Most Played Opponent(s):</strong> {{ most_played_opponent }}</p>
+    <p><strong>
+        {% if "TIE" in most_played_opponent %}
+            Average ELO of Tied Players:
+        {% else %}
+            ELO of Opponent:
+        {% endif %}
+    </strong> {{ reported_elo }}</p>
+
+    <p><a href="{% url 'players_home' %}">← Back to Player Dashboard</a></p>
+</body>
+</html>
