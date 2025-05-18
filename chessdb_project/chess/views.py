@@ -47,7 +47,7 @@ class MatchCreateForm(forms.Form):
     hall_id = forms.IntegerField()
     table_id = forms.IntegerField()
     arbiter_username = forms.CharField(max_length=50)
-    creator = forms.CharField(max_length=50)  # will be the coach's username
+    # creator = forms.CharField(max_length=50)  # will be the coach's username
 
 def create_match(request):
     if request.method == 'POST':
@@ -66,7 +66,7 @@ def create_match(request):
                         data['hall_id'],
                         data['table_id'],
                         data['arbiter_username'],
-                        data['creator'],
+                        # data['creator'],
                         request.session.get('username')
                     ])
                 messages.success(request, "Match created successfully!")
@@ -107,17 +107,20 @@ def assign_black_player(request, match_id):
 def homepage(request):
     return render(request, 'chess/home.html')
 
+import hashlib
+
 def login(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
+        hashed_password = hashlib.sha256(password.encode()).hexdigest() ##BUNU COMMENTLERSİN BABA SENDE ÇALIŞSIN
 
 
-      
-
+    
 
         with connection.cursor() as cursor:
             cursor.callproc('AuthenticateUser', [username, password, None])
+            cursor.callproc('AuthenticateUser', [username, hashed_password, None]) ## BUNU DA COMMENTLERSİN BABA
 
         
             cursor.execute('SELECT @_AuthenticateUser_2')  

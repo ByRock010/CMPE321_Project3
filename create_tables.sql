@@ -535,46 +535,8 @@ DELIMITER ;
 
 
 
--- Stored Procedure create_match:
-DELIMITER $$
 
-CREATE PROCEDURE create_match (
-  IN p_white_player VARCHAR(50),
-  IN p_white_team_id INT,
-  IN p_black_team_id INT,
-  IN p_match_date DATE,
-  IN p_time_slot INT,
-  IN p_hall_id INT,
-  IN p_table_id INT,
-  IN p_arbiter_username VARCHAR(50),
-  IN p_creator VARCHAR(50) -- This is the coach username passed by Django
-)
-BEGIN
-  -- Ensure coach is allowed to assign this white player
-  IF NOT EXISTS (
-    SELECT 1 FROM Player_Team pt
-    JOIN Coach_Team_Agreement ca ON pt.team_id = ca.team_id
-    WHERE pt.player_username = p_white_player
-      AND ca.coach_username = p_creator
-      AND p_match_date BETWEEN ca.contract_start AND ca.contract_finish
-  ) THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Coach can only assign a player from their own team (contract-valid).';
-  END IF;
 
-  -- INSERT after all checks
-  INSERT INTO ChessMatch (
-    white_player, white_team_id, black_team_id,
-    match_date, time_slot, hall_id, table_id,
-    assigned_arbiter_username, creator
-  ) VALUES (
-    p_white_player, p_white_team_id, p_black_team_id,
-    p_match_date, p_time_slot, p_hall_id, p_table_id,
-    p_arbiter_username, p_creator
-  );
-END$$
-
-DELIMITER ;
 
 
 

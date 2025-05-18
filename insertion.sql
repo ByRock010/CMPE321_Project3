@@ -111,16 +111,88 @@ INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
 VALUES ('henry', '1998-04-25', 2150, 'FIDE008', 3);
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('isabel', 'Isa#Blue', 'Isabel', 'Lopez', 'MEX', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('isabel', '2001-02-17', 2240, 'FIDE009', 3);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('jack', 'Jack@321', 'Jack', 'Brown', 'USA', 'Player');
 
 INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
 VALUES ('jack', '1997-11-30', 2000, 'FIDE010', 4);
+
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('will', 'Will@321', 'Will', 'Johnson', 'AUS', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('will', '2000-06-18', 2195, 'FIDE023', 3);
+
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('yusuff', 'Yusuf88@', 'Yusuf', 'Demir', 'TUR', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('yusuff', '1999-12-26', 2170, 'FIDE025', 4);
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('zoe', 'Zo3!pass', 'Zoe', 'Tanaka', 'JPN', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('zoe', '2001-05-05', 2220, 'FIDE026', 2);
+
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('claire', 'Claire#01', 'Claire', 'Dupont', 'FRA', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('claire', '2002-01-11', 2225, 'FIDE035', 2);
+
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('isabella', 'Isabella#77', 'Isabella', 'Moretti', 'ITA', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('isabella', '2001-08-19', 2240, 'FIDE039', 2);
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('logan', 'Logan@55', 'Logan', "O'Connor", 'IRL', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('logan', '1997-04-14', 2115, 'FIDE040', 4);
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('sophia', 'Sophia$12', 'Sophia', 'Weber', 'GER', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('sophia', '2000-06-01', 2280, 'FIDE041', 2);
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('lucas', 'Lucas!88', 'Lucas', 'Novak', 'CZE', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('lucas', '1999-12-30', 2145, 'FIDE042', 4);
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('james', 'James!44', 'James', 'Silva', 'BRA', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('james', '1998-03-21', 2155, 'FIDE044', 3);
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('amelia', 'Amelia#99', 'Amelia', 'Zhang', 'CHN', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('amelia', '2001-09-09', 2275, 'FIDE045', 2);
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('benjamin', 'Ben@2023', 'Benjamin', 'Fischer', 'GER', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('benjamin', '1997-01-27', 2095, 'FIDE046', 4);
+
+
+-- BURADAN İTİBAREN İNVALİD PLAYERS
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('isabel', 'Isa#Blue', 'Isabel', 'Lopez', 'MEX', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('isabel', '2001-02-17', 2240, 'FIDE009', 3);
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('kara', 'Kara$99', 'Kara', 'Singh', 'IND', 'Player');
@@ -195,34 +267,16 @@ INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
 VALUES ('vera', '2001-04-22', 2260, 'FIDE022', 2);
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('will', 'Will@321', 'Will', 'Johnson', 'AUS', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('will', '2000-06-18', 2195, 'FIDE023', 3);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('xena', 'Xena$!', 'Xena', 'Popov', 'RUS', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('xena', '1998-02-09', 2330, 'FIDE024', 1);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('yusuff', 'Yusuf88@', 'Yusuf', 'Demir', 'TUR', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('yusuff', '1999-12-26', 2170, 'FIDE025', 4);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('zoe', 'Zo3!pass', 'Zoe', 'Tanaka', 'JPN', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('zoe', '2001-05-05', 2220, 'FIDE026', 2);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('hakan', 'H@kan44', 'Hakan', 'Şimşek', 'TUR', 'Player');
 
 INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
 VALUES ('hakan', '1997-10-14', 2110, 'FIDE027', 4);
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('ryan', 'Ryan@77', 'Ryan', 'Edwards', 'USA', 'Player');
+
+INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+VALUES ('ryan', '1997-09-02', 2170, 'FIDE034', 3);
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('julia', 'J!ulia77', 'Julia', 'Nilsen', 'SWE', 'Player');
@@ -261,18 +315,6 @@ INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
 VALUES ('sofia', '2000-02-17', 2250, 'FIDE033', 2);
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('ryan', 'Ryan@77', 'Ryan', 'Edwards', 'USA', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('ryan', '1997-09-02', 2170, 'FIDE034', 3);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('claire', 'Claire#01', 'Claire', 'Dupont', 'FRA', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('claire', '2002-01-11', 2225, 'FIDE035', 2);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('jacob', 'Jacob!pass', 'Jacob', 'Green', 'AUS', 'Player');
 
 INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
@@ -291,52 +333,10 @@ INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
 VALUES ('ethan', '1998-03-25', 2190, 'FIDE038', 3);
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('isabella', 'Isabella#77', 'Isabella', 'Moretti', 'ITA', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('isabella', '2001-08-19', 2240, 'FIDE039', 2);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('logan', 'Logan@55', 'Logan', "O'Connor", 'IRL', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('logan', '1997-04-14', 2115, 'FIDE040', 4);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('sophia', 'Sophia$12', 'Sophia', 'Weber', 'GER', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('sophia', '2000-06-01', 2280, 'FIDE041', 2);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('lucas', 'Lucas!88', 'Lucas', 'Novak', 'CZE', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('lucas', '1999-12-30', 2145, 'FIDE042', 4);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('harper', 'Harper@pw', 'Harper', 'Clarke', 'UK', 'Player');
 
 INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
 VALUES ('harper', '2002-07-06', 2200, 'FIDE043', 2);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('james', 'James!44', 'James', 'Silva', 'BRA', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('james', '1998-03-21', 2155, 'FIDE044', 3);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('amelia', 'Amelia#99', 'Amelia', 'Zhang', 'CHN', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('amelia', '2001-09-09', 2275, 'FIDE045', 2);
-
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('benjamin', 'Ben@2023', 'Benjamin', 'Fischer', 'GER', 'Player');
-
-INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
-VALUES ('benjamin', '1997-01-27', 2095, 'FIDE046', 4);
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('ella', 'Ella@pw', 'Ella', 'Svensson', 'SWE', 'Player');
@@ -355,6 +355,7 @@ VALUES ('lily', 'Lily@sun', 'Lily', 'Nakamura', 'USA', 'Player');
 
 INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
 VALUES ('lily', '2003-02-12', 2310, 'FIDE049', 2);
+
 
 
 
@@ -400,6 +401,16 @@ INSERT INTO Team (team_id, team_name, sponsor_id) VALUES (10, 'Blitz Masters', 1
 
 
 -- COACHES
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('david_b', 'dPass!99', 'David', 'Brown', 'USA', 'Coach'); 
+
+
+-- BURANIN GERİSİ İNVALİD
+
+INSERT INTO Coach (username) VALUES ('david_b');
+
+INSERT INTO Coach_Team_Agreement (coach_username, team_id, contract_start, contract_finish)
+VALUES ('david_b', 2, '2024-02-15', '2026-02-15');
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('carol', 'coachpw', 'Carol', 'White', 'Canada', 'Coach');
@@ -409,13 +420,6 @@ INSERT INTO Coach (username) VALUES ('carol');
 INSERT INTO Coach_Team_Agreement (coach_username, team_id, contract_start, contract_finish)
 VALUES ('carol', 1, '2023-01-01', '2026-01-01');
 
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('david_b', 'dPass!99', 'David', 'Brown', 'USA', 'Coach');       --VALİD
-
-INSERT INTO Coach (username) VALUES ('david_b');
-
-INSERT INTO Coach_Team_Agreement (coach_username, team_id, contract_start, contract_finish)
-VALUES ('david_b', 2, '2024-02-15', '2026-02-15');
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('emma_green', 'E@mma77', 'Emma', 'Green', 'UK', 'Coach');
@@ -485,13 +489,15 @@ VALUES ('arslan_yusuf', 10, '2024-02-01', '2026-08-01');
 
 
 --COACH CERTIFICATES
+INSERT INTO CoachCertification (coach_username, coach_certification)
+VALUES ('david_b', 'National Level');
+
+-- GERİSİ BİR ÖNCEKİNDEN DOLAYI ÇALIŞMIYOR
 
 INSERT INTO CoachCertification (coach_username, coach_certification)
 VALUES ('carol', 'FIDE Certified');
 INSERT INTO CoachCertification (coach_username, coach_certification)
 VALUES ('carol', 'National Level');
-INSERT INTO CoachCertification (coach_username, coach_certification)
-VALUES ('david_b', 'National Level');
 INSERT INTO CoachCertification (coach_username, coach_certification)
 VALUES ('emma_green', 'FIDE Certified');
 INSERT INTO CoachCertification (coach_username, coach_certification)
@@ -516,6 +522,13 @@ VALUES ('arslan_yusuf', 'National Level');
 
 
 -- ARBITERS
+
+INSERT INTO User (username, password_hash, name, surname, nationality, role)
+VALUES ('sara', 'sara!2024', 'Sara', 'Kim', 'South Korea', 'Arbiter');    -- BURADA HATA VERMELİ büyük harf yok, ama kabul eti
+INSERT INTO Arbiter (username, experience_level)
+VALUES ('sara', 'Expert');
+
+-- BURANIN ALTINDAKİLER FULL İNVALID
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('erin', 'arbpw', 'Erin', 'Gray', 'Germany', 'Arbiter');
@@ -553,11 +566,7 @@ VALUES ('james', 'secure1', 'James', 'Taylor', 'UK', 'Arbiter');
 INSERT INTO Arbiter (username, experience_level)
 VALUES ('james', 'Intermediate');
 
-INSERT INTO User (username, password_hash, name, surname, nationality, role)
-VALUES ('sara', 'sara!2024', 'Sara', 'Kim', 'South Korea', 'Arbiter');    -- BURADA HATA VERMELİ büyük harf yok, ama kabul eti
 
-INSERT INTO Arbiter (username, experience_level)
-VALUES ('sara', 'Expert');
 
 INSERT INTO User (username, password_hash, name, surname, nationality, role)
 VALUES ('mohamed', 'mpass', 'Mohamed', 'Farouk', 'Egypt', 'Arbiter');
@@ -569,6 +578,10 @@ VALUES ('mohamed', 'Advanced');
 
 
 -- ARBITER CERTIFICATIONS
+INSERT INTO ArbiterCertification (arbiter_username, arbiter_certification)
+VALUES ('sara', 'International Arbiter');
+
+-- ÖNCEKİ HATADAN DOLAYI BURASI ÇALIŞMIYOR
 
 INSERT INTO ArbiterCertification (arbiter_username, arbiter_certification)
 VALUES ('erin', 'FIDE Certified');
@@ -582,8 +595,6 @@ INSERT INTO ArbiterCertification (arbiter_username, arbiter_certification)
 VALUES ('ana', 'FIDE Certified');
 INSERT INTO ArbiterCertification (arbiter_username, arbiter_certification)
 VALUES ('james', 'Regional Certification');
-INSERT INTO ArbiterCertification (arbiter_username, arbiter_certification)
-VALUES ('sara', 'International Arbiter');
 INSERT INTO ArbiterCertification (arbiter_username, arbiter_certification)
 VALUES ('mohamed', 'National Arbiter');
 
@@ -646,9 +657,45 @@ VALUES ('grace', 7);
 INSERT INTO Player_Team (player_username, team_id)
 VALUES ('henry', 8);
 INSERT INTO Player_Team (player_username, team_id)
-VALUES ('isabel', 9);
-INSERT INTO Player_Team (player_username, team_id)
 VALUES ('jack', 10);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('will', 3);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('yusuff', 5);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('zoe', 6);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('julia', 8);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('mehmet', 9);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('elena', 10);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('nina', 1);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('louis', 2);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('sofia', 3);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('claire', 5);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('isabella', 9);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('logan', 10);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('sophia', 1);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('lucas', 2);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('james', 4);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('amelia', 5);
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('benjamin', 6);
+
+-- BURANIN AŞAĞISI İNVALİD
+INSERT INTO Player_Team (player_username, team_id)
+VALUES ('isabel', 9);
 INSERT INTO Player_Team (player_username, team_id)
 VALUES ('kara', 1);
 INSERT INTO Player_Team (player_username, team_id)
@@ -674,31 +721,11 @@ VALUES ('umar', 1);
 INSERT INTO Player_Team (player_username, team_id)
 VALUES ('vera', 2);
 INSERT INTO Player_Team (player_username, team_id)
-VALUES ('will', 3);
-INSERT INTO Player_Team (player_username, team_id)
 VALUES ('xena', 4);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('yusuff', 5);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('zoe', 6);
 INSERT INTO Player_Team (player_username, team_id)
 VALUES ('hakan', 7);
 INSERT INTO Player_Team (player_username, team_id)
-VALUES ('julia', 8);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('mehmet', 9);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('elena', 10);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('nina', 1);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('louis', 2);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('sofia', 3);
-INSERT INTO Player_Team (player_username, team_id)
 VALUES ('ryan', 4);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('claire', 5);
 INSERT INTO Player_Team (player_username, team_id)
 VALUES ('jacob', 6);
 INSERT INTO Player_Team (player_username, team_id)
@@ -706,21 +733,7 @@ VALUES ('ava', 7);
 INSERT INTO Player_Team (player_username, team_id)
 VALUES ('ethan', 8);
 INSERT INTO Player_Team (player_username, team_id)
-VALUES ('isabella', 9);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('logan', 10);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('sophia', 1);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('lucas', 2);
-INSERT INTO Player_Team (player_username, team_id)
 VALUES ('harper', 3);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('james', 4);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('amelia', 5);
-INSERT INTO Player_Team (player_username, team_id)
-VALUES ('benjamin', 6);
 INSERT INTO Player_Team (player_username, team_id)
 VALUES ('ella', 7);
 INSERT INTO Player_Team (player_username, team_id)
@@ -733,6 +746,22 @@ VALUES ('lily', 9);
 
 
 -- MATCHES
+
+-- ÇALIŞAN BİR MAÇ EKLEME
+INSERT INTO ChessMatch (
+    match_date, time_slot, hall_id, table_id,
+    white_player_team_id, white_player,
+    black_player_team_id, black_player,
+    assigned_arbiter_username, created_by, result
+)
+VALUES (
+    '2025-03-01', 1, 1, 1,
+    2, 'bob1',
+    1, 'alice',
+    'sara', 'david_b', 'Draw'    -- RATİNG YOK ARBİTER OLMAN LAZIM DİYOR
+);
+
+
 
 INSERT INTO ChessMatch (
     match_id, match_date, time_slot, hall_id, table_id,
@@ -917,19 +946,6 @@ INSERT INTO ChessMatch (
 
 
 
--- ÇALIŞAN BİR MAÇ EKLEME
-INSERT INTO ChessMatch (
-    match_date, time_slot, hall_id, table_id,
-    white_player_team_id, white_player,
-    black_player_team_id, black_player,
-    assigned_arbiter_username, created_by, result
-)
-VALUES (
-    '2025-03-01', 1, 1, 1,
-    2, 'bob1',
-    1, 'alice',
-    'sara', 'david_b', 'Draw'    -- RATİNG YOK ARBİTER OLMAN LAZIM DİYOR
-);
 
 
 
