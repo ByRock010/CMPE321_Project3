@@ -34,7 +34,7 @@ FOREIGN KEY (coach_username) REFERENCES Coach(username)
 ); 
 CREATE TABLE Arbiter ( 
 username VARCHAR(50) PRIMARY KEY, 
-experience_level ENUM('Beginner', 'Intermediate', 'Advanced') NOT NULL, 
+experience_level ENUM('Beginner', 'Intermediate', 'Advanced', 'Expert') NOT NULL, 
 FOREIGN KEY (username) REFERENCES User(username) ON DELETE CASCADE 
 ); 
 CREATE TABLE ArbiterCertification ( 
@@ -42,11 +42,24 @@ arbiter_username VARCHAR(50) NOT NULL,
 arbiter_certification VARCHAR(50) NOT NULL, 
 PRIMARY KEY (arbiter_username, arbiter_certification), 
 FOREIGN KEY (arbiter_username) REFERENCES Arbiter(username) 
-); 
+);
+CREATE TABLE Sponsor (
+  sponsor_id INT PRIMARY KEY,
+  sponsor_name VARCHAR(100) NOT NULL
+);
 CREATE TABLE Team ( 
-team_id INT PRIMARY KEY AUTO_INCREMENT, 
-team_name VARCHAR(100) NOT NULL
-); 
+  team_id INT PRIMARY KEY AUTO_INCREMENT, 
+  team_name VARCHAR(100) NOT NULL,
+  sponsor_id INT NOT NULL,
+  FOREIGN KEY (sponsor_id) REFERENCES Sponsor(sponsor_id)
+);
+CREATE TABLE Player_Team (
+  player_username VARCHAR(50),
+  team_id INT,
+  PRIMARY KEY (player_username, team_id),
+  FOREIGN KEY (player_username) REFERENCES Player(username),
+  FOREIGN KEY (team_id) REFERENCES Team(team_id)
+);
 CREATE TABLE Coach_Team_Agreement ( 
 coach_username VARCHAR(50), 
 team_id INT, 
@@ -81,6 +94,8 @@ CREATE TABLE ChessMatch (
   assigned_arbiter_username    VARCHAR(50)    NOT NULL,
   created_by                   VARCHAR(50)    NOT NULL,
   rating                       INT            CHECK (rating BETWEEN 1 AND 10),
+  result ENUM('White Wins', 'Black Wins', 'Draw'),
+
 
   FOREIGN KEY (hall_id)                   REFERENCES Hall(hall_id),
   FOREIGN KEY (table_id)                  REFERENCES ChessTable(table_id),
@@ -99,15 +114,6 @@ CREATE TABLE ChessMatch (
   UNIQUE (table_id, match_date, time_slot)
 ) ENGINE=InnoDB;
 
-
-
-CREATE TABLE Player_Team ( 
-player_username VARCHAR(50), 
-team_id INT, 
-PRIMARY KEY (player_username, team_id), 
-FOREIGN KEY (player_username) REFERENCES Player(username), 
-FOREIGN KEY (team_id) REFERENCES Team(team_id) 
-); 
 
 
 
@@ -169,17 +175,6 @@ END$$
 
 DELIMITER ;
 
-DELIMITER $$
-
-CREATE PROCEDURE AddCoach(
-    IN c_username VARCHAR(50)
-)
-BEGIN
-  INSERT INTO Coach (username)
-  VALUES (c_username);
-END$$
-  
-DELIMITER ; 
 
 DELIMITER $$
 
@@ -206,22 +201,6 @@ BEGIN
 END$$
   
 DELIMITER ; 
-
-DELIMITER $$
-
-CREATE PROCEDURE AddArbiter(
-    IN c_username VARCHAR(50),
-    IN experience VARCHAR(50)
-)
-BEGIN
-  INSERT INTO Arbiter (username,experience_level)
-  VALUES (c_username,experience);
-END$$
-  
-DELIMITER ; 
-
-
-
 
 
 
