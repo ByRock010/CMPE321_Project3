@@ -1,9 +1,10 @@
+import hashlib
+
 from django import forms
 from django.contrib import messages
 from django.db import connection
 from django.http import Http404
 from django.shortcuts import redirect, render
-import hashlib
 
 
 class AssignBlackForm(forms.Form):    # ilk kez form kullandım la bilmiyodum böyle bi şey oldğunu
@@ -65,10 +66,10 @@ def create_match(request):
                         data['hall_id'],
                         data['table_id'],
                         data['arbiter_username'],
-                        data['creator']
+                        data['creator'],
+                        request.session.get('username')
                     ])
                 messages.success(request, "Match created successfully!")
-                return redirect('match_list')
             except Exception as e:
                 messages.error(request, f"Error: {str(e)}")
     else:
@@ -111,12 +112,12 @@ def login(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
 
-        password = request.POST.get("password")
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+      
 
 
         with connection.cursor() as cursor:
-            cursor.callproc('AuthenticateUser', [username, hashed_password, None])
+            cursor.callproc('AuthenticateUser', [username, password, None])
 
         
             cursor.execute('SELECT @_AuthenticateUser_2')  
@@ -214,6 +215,7 @@ def view_assigned_matches(request):
 
 
 from django.db import transaction
+
 
 def submit_rating(request):
     username = request.session.get("username")
