@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.db import connection
 from django.http import Http404
 from django.shortcuts import redirect, render
+import hashlib
 
 
 class AssignBlackForm(forms.Form):    # ilk kez form kullandım la bilmiyodum böyle bi şey oldğunu
@@ -110,8 +111,13 @@ def login(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
 
+        password = request.POST.get("password")
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+
         with connection.cursor() as cursor:
-            cursor.callproc('AuthenticateUser', [username, password, None])
+            cursor.callproc('AuthenticateUser', [username, hashed_password, None])
+
         
             cursor.execute('SELECT @_AuthenticateUser_2')  
             result = cursor.fetchone()
