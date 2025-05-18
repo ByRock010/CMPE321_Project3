@@ -1,11 +1,14 @@
 CREATE TABLE User ( 
 username VARCHAR(50) PRIMARY KEY, 
 password_hash VARCHAR(100) NOT NULL, -- İsmini password_hash yaptım
-name VARCHAR(50) NOT NULL, 
-surname VARCHAR(50) NOT NULL, 
-nationality VARCHAR(50) NOT NULL,
+name VARCHAR(50) , 
+surname VARCHAR(50) , 
+nationality VARCHAR(50) ,
 role ENUM('Player', 'Coach', 'Arbiter', 'Admin') NOT NULL  -- BURA YENİ
 ); 
+CREATE TABLE Admin(
+  username VARCHAR(50) PRIMARY KEY,
+  FOREIGN KEY (username) REFERENCES USER(username));
 CREATE TABLE Title ( 
 title_id INT PRIMARY KEY AUTO_INCREMENT, 
 title_name VARCHAR(50) UNIQUE NOT NULL 
@@ -114,7 +117,55 @@ FOREIGN KEY (team_id) REFERENCES Team(team_id)
 
 -- BURADAN İTİBAREN YENİ --------------
 
+-- baba bu user rolei alio 
+DELIMITER //
 
+CREATE PROCEDURE AuthenticateUser(
+    IN in_username VARCHAR(50),
+    IN in_password VARCHAR(100),
+    OUT out_role VARCHAR(10)
+)
+BEGIN
+    SELECT role INTO out_role
+    FROM User
+    WHERE username = in_username AND password_hash = in_password;
+END //
+
+DELIMITER ;
+
+DELIMITER $$
+-- bu baba yeni user ekliyo
+CREATE PROCEDURE AddUser(
+  IN username VARCHAR(50),
+  IN password VARCHAR(100), 
+  IN name VARCHAR(50), 
+  IN surname VARCHAR(50), 
+  IN nationality VARCHAR(50),
+)
+BEGIN
+    INSERT INTO User (username, password_hash, name, surname, nationality,role)
+    VALUES (username, password, name, surname, nationality, 'Player');
+END$$
+
+DELIMITER ;
+
+
+-- bu baba yeni player ekliyo
+DELIMITER $$
+
+CREATE PROCEDURE AddPlayer(
+    IN p_username VARCHAR(50),
+    IN p_date_of_birth DATE,
+    IN p_elo_rating INT,
+    IN p_fide_id VARCHAR(20),
+    IN p_title_id INT
+)
+BEGIN
+    INSERT INTO Player (username, date_of_birth, elo_rating, fide_id, title_id)
+    VALUES (p_username, p_date_of_birth, p_elo_rating, p_fide_id, p_title_id);
+END$$
+
+DELIMITER ;
 
 
 

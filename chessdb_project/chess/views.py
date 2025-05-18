@@ -1,8 +1,8 @@
-from django.shortcuts import render, redirect
-from django.db import connection
-from django.http import Http404
 from django import forms
 from django.contrib import messages
+from django.db import connection
+from django.http import Http404
+from django.shortcuts import redirect, render
 
 
 class AssignBlackForm(forms.Form):    # ilk kez form kullandım la bilmiyodum böyle bi şey oldğunu
@@ -34,6 +34,7 @@ def match_detail(request, match_id):
 from django import forms
 from django.contrib import messages
 from django.shortcuts import redirect
+
 
 class MatchCreateForm(forms.Form):
     white_player = forms.CharField(max_length=50)
@@ -104,6 +105,35 @@ def assign_black_player(request, match_id):
 def homepage(request):
     return render(request, 'chess/home.html')
 
+def login(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        with connection.cursor() as cursor:
+            cursor.callproc('AuthenticateUser', [username, password, None])
+        
+            cursor.execute('SELECT @_AuthenticateUser_2')  
+            result = cursor.fetchone()
+
+        if result and result[0]:
+            role = result[0]
+            request.session['username'] = username
+            request.session['role'] = role
+
+            if role == "Player":
+                return redirect("players_home")
+            elif role == "Coach":
+                return redirect("coaches_home")
+            elif role == "Arbiter":
+                return redirect("arbiters_home")
+            elif role == "Admin":
+                return redirect("dbmanagers_home")
+        else:
+            messages.error(request, "Invalid credentials")
+
+    return render(request, 'chess/login.html')
+
 def players_home(request):
     return render(request, 'chess/players_home.html')
 
@@ -138,7 +168,26 @@ def view_rating_stats(request):
     return render(request, 'chess/placeholder.html', {'message': 'Your average ratings and match count will be here'})
 
 def add_player(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Player creation form coming soon'})
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        name = request.POST.get('name')
+        surname = request.POST.get('surname')
+        nationality = request.POST.get('nationality')
+        date_of_birth = request.POST.get('date_of_birth')
+        elo = request.POST.get('elo_rating')
+        fide_id = request.POST.get('fide_id')
+        title= request.POST.get('title_id')
+        
+        with connection.cursor() as cursor:
+            cursor.callproc('AddUser', [username, password, name, surname, nationality])
+            cursor.callproc('AddPlayer', [username, date_of_birth, elo, fide_id, title])
+            result = cursor.fetchone()
+            if not result:
+                messages.error(request, "ERROR")
+                    
+                    
+    return render(request, 'chess/addplayer.html')
 
 def add_coach(request):
     return render(request, 'chess/placeholder.html', {'message': 'Coach creation form coming soon'})
