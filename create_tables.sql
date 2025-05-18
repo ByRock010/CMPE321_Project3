@@ -141,11 +141,11 @@ CREATE PROCEDURE AddUser(
   IN name VARCHAR(50), 
   IN surname VARCHAR(50), 
   IN nationality VARCHAR(50),
-  IN role_value ENUM('Player', 'Coach', 'Arbiter', 'Admin')
+  IN role VARCHAR(50)
 )
 BEGIN
     INSERT INTO User (username, password_hash, name, surname, nationality,role)
-    VALUES (username, password, name, surname, nationality, 'Player');
+    VALUES (username, password, name, surname, nationality, role);
 END$$
 
 DELIMITER ;
@@ -166,7 +166,60 @@ BEGIN
     VALUES (p_username, p_date_of_birth, p_elo_rating, p_fide_id, p_title_id);
 END$$
 
+
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE AddCoach(
+    IN c_username VARCHAR(50)
+)
+BEGIN
+  INSERT INTO Coach (username)
+  VALUES (c_username);
+END$$
+  
+DELIMITER ; 
+
+DELIMITER $$
+
+CREATE PROCEDURE AddArbiter(
+    IN c_username VARCHAR(50),
+    IN experience VARCHAR(50)
+)
+BEGIN
+  INSERT INTO Arbiter (username,experience_level)
+  VALUES (c_username,experience);
+END$$
+  
+DELIMITER ; 
+
+
+DELIMITER $$
+
+CREATE PROCEDURE AddCoach(
+    IN c_username VARCHAR(50)
+)
+BEGIN
+  INSERT INTO Coach (username)
+  VALUES (c_username);
+END$$
+  
+DELIMITER ; 
+
+DELIMITER $$
+
+CREATE PROCEDURE AddArbiter(
+    IN c_username VARCHAR(50),
+    IN experience VARCHAR(50)
+)
+BEGIN
+  INSERT INTO Arbiter (username,experience_level)
+  VALUES (c_username,experience);
+END$$
+  
+DELIMITER ; 
+
 
 
 

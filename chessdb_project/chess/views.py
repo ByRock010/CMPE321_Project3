@@ -214,20 +214,13 @@ def add_player(request):
         title = request.POST.get('title_id')
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT 1 FROM User WHERE username = %s", [username])
-            if cursor.fetchone():
-                messages.error(request, f"Username '{username}' already exists.")
-                return render(request, 'chess/addplayer.html')
-
-            try:
-                # Insert into User with explicit role
-                cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Player'])
-                cursor.callproc('AddPlayer', [username, date_of_birth, elo, fide_id, title])
-                messages.success(request, "Player added successfully!")
-                return redirect('dbmanagers_home')
-            except Exception as e:
-                messages.error(request, f"ERROR: {str(e)}")
-
+            cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Player'])
+            cursor.callproc('AddPlayer', [username, date_of_birth, elo, fide_id, title])
+            result = cursor.fetchone()
+            if not result:
+                messages.error(request, "ERROR")
+                    
+                    
     return render(request, 'chess/addplayer.html')
 
 
@@ -239,40 +232,32 @@ def add_coach(request):
         name = request.POST.get('name')
         surname = request.POST.get('surname')
         nationality = request.POST.get('nationality')
-        team_id = request.POST.get('team_id')
-        contract_start = request.POST.get('contract_start')
-        contract_finish = request.POST.get('contract_finish')
-
+        
         with connection.cursor() as cursor:
-            # Check duplicate
-            cursor.execute("SELECT 1 FROM User WHERE username = %s", [username])
-            if cursor.fetchone():
-                messages.error(request, f"Username '{username}' already exists.")
-                return render(request, 'chess/addcoach.html')
-
-            try:
-                # 1. Insert into User (trigger hashes password)
-                cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Coach'])
-                
-                # 2. Insert into Coach
-                cursor.execute("INSERT INTO Coach (username) VALUES (%s)", [username])
-
-                # 3. Insert into Coach_Team_Agreement
-                cursor.execute("""
-                    INSERT INTO Coach_Team_Agreement (coach_username, team_id, contract_start, contract_finish)
-                    VALUES (%s, %s, STR_TO_DATE(%s, '%%d-%%m-%%Y'), STR_TO_DATE(%s, '%%d-%%m-%%Y'))
-                """, [username, team_id, contract_start, contract_finish])
-
-                messages.success(request, "Coach created successfully!")
-                return redirect('dbmanagers_home')
-            except Exception as e:
-                messages.error(request, f"ERROR: {str(e)}")
-
+            cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Coach'])
+            cursor.callproc('AddCoach', [username])
+            result = cursor.fetchone()
+            if not result:
+                messages.error(request, "ERROR")
+                    
     return render(request, 'chess/addcoach.html')
 
-
 def add_arbiter(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Arbiter creation form coming soon'})
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        name = request.POST.get('name')
+        surname = request.POST.get('surname')
+        nationality = request.POST.get('nationality')
+        experience = request.POST.get('experience')
+        
+        with connection.cursor() as cursor:
+            cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Arbiter'])
+            cursor.callproc('AddArbiter', [username, experience])
+            result = cursor.fetchone()
+            if not result:
+                messages.error(request, "ERROR")
+    return render(request, 'chess/addarbiter.html')
 
 def rename_hall(request):
     return render(request, 'chess/placeholder.html', {'message': 'Hall rename operation coming soon'})
