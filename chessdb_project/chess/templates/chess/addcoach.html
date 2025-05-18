@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Coach</title>
+</head>
+<body>
+    <h2>Add Coach</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br>
+
+        <label>Password:</label><br>
+        <input type="text" name="password" required><br>
+
+        <label>Name:</label><br>
+        <input type="text" name="name" required><br>
+
+        <label>Surname:</label><br>
+        <input type="text" name="surname" required><br>
+
+        <label>Nationality:</label><br>
+        <input type="text" name="nationality" required><br>
+
+        <label>Team ID:</label><br>
+        <input type="number" name="team_id" required><br>
+
+        <label>Contract Start (DD-MM-YYYY):</label><br>
+        <input type="text" name="contract_start" placeholder="e.g., 01-01-2023" required><br>
+
+        <label>Contract Finish (DD-MM-YYYY):</label><br>
+        <input type="text" name="contract_finish" placeholder="e.g., 01-01-2026" required><br><br>
+
+        <input type="submit" value="Add Coach">
+    </form>
+</body>
+</html>

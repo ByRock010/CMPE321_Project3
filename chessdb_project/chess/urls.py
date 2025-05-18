@@ -24,5 +24,6 @@ urlpatterns = [
     path('dbmanagers/add_coach/', views.add_coach, name='add_coach'),
     path('dbmanagers/add_arbiter/', views.add_arbiter, name='add_arbiter'),
     path('dbmanagers/rename_hall/', views.rename_hall, name='rename_hall'),
+    path('dbmanagers/add_coach/', views.add_coach, name='add_coach'),
 
 ]
