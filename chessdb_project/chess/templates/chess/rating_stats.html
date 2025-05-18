@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rating Stats</title>
+</head>
+<body>
+  <h2>Rating Stats for {{ username }}</h2>
+
+  <p><strong>Total Matches Rated:</strong> {{ match_count }}</p>
+  <p><strong>Average Rating Given:</strong> {{ avg_rating }}</p>
+
+  <a href="{% url 'arbiters_home' %}">Back to Arbiter Home</a>
+</body>
+</html>

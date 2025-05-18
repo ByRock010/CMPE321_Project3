@@ -248,7 +248,38 @@ def submit_rating(request):
 
 
 def view_rating_stats(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Your average ratings and match count will be here'})
+    username = request.session.get("username")
+    role = request.session.get("role")
+
+    if not username or role != "Arbiter":
+        messages.error(request, "You must be logged in as an arbiter.")
+        return redirect("login")
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    COUNT(rating) AS match_count,
+                    ROUND(AVG(rating), 2) AS avg_rating
+                FROM ChessMatch
+                WHERE rating IS NOT NULL
+                  AND assigned_arbiter_username = %s
+            """, [username])
+            result = cursor.fetchone()
+            match_count = result[0] or 0
+            avg_rating = result[1] or 0.0
+
+    except Exception as e:
+        messages.error(request, f"Failed to load rating stats: {str(e)}")
+        match_count = 0
+        avg_rating = 0.0
+
+    return render(request, 'chess/rating_stats.html', {
+        'username': username,
+        'match_count': match_count,
+        'avg_rating': avg_rating,
+    })
+
 
 def add_player(request):
     if request.method == "POST":
