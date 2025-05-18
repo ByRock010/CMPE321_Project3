@@ -140,7 +140,8 @@ CREATE PROCEDURE AddUser(
   IN password VARCHAR(100), 
   IN name VARCHAR(50), 
   IN surname VARCHAR(50), 
-  IN nationality VARCHAR(50)
+  IN nationality VARCHAR(50),
+  IN role_value ENUM('Player', 'Coach', 'Arbiter', 'Admin')
 )
 BEGIN
     INSERT INTO User (username, password_hash, name, surname, nationality,role)

@@ -183,17 +183,17 @@ def add_player(request):
         date_of_birth = request.POST.get('date_of_birth')
         elo = request.POST.get('elo_rating')
         fide_id = request.POST.get('fide_id')
-        title= request.POST.get('title_id')
+        title = request.POST.get('title_id')
 
         with connection.cursor() as cursor:
-            # Check if user exists
             cursor.execute("SELECT 1 FROM User WHERE username = %s", [username])
             if cursor.fetchone():
                 messages.error(request, f"Username '{username}' already exists.")
                 return render(request, 'chess/addplayer.html')
 
             try:
-                cursor.callproc('AddUser', [username, password, name, surname, nationality])
+                # Insert into User with explicit role
+                cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Player'])
                 cursor.callproc('AddPlayer', [username, date_of_birth, elo, fide_id, title])
                 messages.success(request, "Player added successfully!")
                 return redirect('dbmanagers_home')
@@ -201,6 +201,7 @@ def add_player(request):
                 messages.error(request, f"ERROR: {str(e)}")
 
     return render(request, 'chess/addplayer.html')
+
 
 
 def add_coach(request):
@@ -223,7 +224,7 @@ def add_coach(request):
 
             try:
                 # 1. Insert into User (trigger hashes password)
-                cursor.callproc('AddUser', [username, password, name, surname, nationality])
+                cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Coach'])
                 
                 # 2. Insert into Coach
                 cursor.execute("INSERT INTO Coach (username) VALUES (%s)", [username])
