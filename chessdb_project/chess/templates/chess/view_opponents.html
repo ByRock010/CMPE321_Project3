@@ -1,0 +1,21 @@
+{% block content %}
+  <h2>Players You've Played Against</h2>
+  {% if opponents %}
+    <table border="1">
+      <tr>
+        <th>Opponent</th>
+        <th>Times Played</th>
+      </tr>
+      {% for o in opponents %}
+      <tr>
+        <td>{{ o.opponent }}</td>
+        <td>{{ o.times_played }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>You haven't played with anyone yet.</p>
+  {% endif %}
+
+  <p><a href="{% url 'players_home' %}">← Back to Player Dashboard</a></p>
+{% endblock %}

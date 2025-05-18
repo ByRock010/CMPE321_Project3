@@ -156,8 +156,25 @@ def arbiters_home(request):
 def dbmanagers_home(request):
     return render(request, 'chess/dbmanagers_home.html')
 
-def view_match_history(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Match history coming soon'})
+def view_played_opponents(request):
+    username = request.session.get("username")
+    if not username:
+        messages.error(request, "You must be logged in.")
+        return redirect('login')
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.callproc("GetPlayerOpponents", [username])
+            opponents = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
+    except Exception as e:
+        messages.error(request, f"Failed to load opponents: {str(e)}")
+        opponents = []
+
+    return render(request, 'chess/view_opponents.html', {
+        'username': username,
+        'opponents': opponents
+    })
+
 
 def view_player_stats(request):
     username = request.session.get("username")
@@ -293,9 +310,11 @@ def submit_rating(request):
             return redirect("view_assigned_matches")
 
         except Exception as e:
+            print("Exception during rating:", str(e))  # ADD THIS
             messages.error(request, f"Submission failed: {str(e)}")
 
     return render(request, 'chess/submit_rating.html')
+
 
 
 def view_rating_stats(request):

@@ -13,7 +13,6 @@ urlpatterns = [
     path('coaches/', views.coaches_home, name='coaches_home'),
     path('arbiters/', views.arbiters_home, name='arbiters_home'),
     path('dbmanagers/', views.dbmanagers_home, name='dbmanagers_home'),
-    path('players/match_history/', views.view_match_history, name='view_match_history'),
     path('players/stats/', views.view_player_stats, name='view_player_stats'),
     path('coaches/delete_match/', views.delete_match, name='delete_match'),
     path('coaches/available_halls/', views.view_available_halls, name='view_available_halls'),
@@ -25,5 +24,7 @@ urlpatterns = [
     path('dbmanagers/add_arbiter/', views.add_arbiter, name='add_arbiter'),
     path('dbmanagers/rename_hall/', views.rename_hall, name='rename_hall'),
     path('dbmanagers/add_coach/', views.add_coach, name='add_coach'),
+    path('players/opponents/', views.view_played_opponents, name='view_played_opponents'),
+
 
 ]
