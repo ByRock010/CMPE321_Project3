@@ -1,0 +1,15 @@
+<h2>Delete Match</h2>
+<form method="post">
+  {% csrf_token %}
+  <label for="match_id">Match ID:</label>
+  <input type="number" name="match_id" required>
+  <button type="submit">Delete</button>
+</form>
+
+{% if messages %}
+  <ul>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}

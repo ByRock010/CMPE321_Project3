@@ -484,17 +484,46 @@ END$$
 DELIMITER ;
 
 
--- Track “who created” each match & restrict deletions to that coach
+-- -- Track “who created” each match & restrict deletions to that coach
+-- DELIMITER $$
+
+-- CREATE TRIGGER trg_only_creator_delete
+-- BEFORE DELETE ON ChessMatch
+-- FOR EACH ROW
+-- BEGIN
+--   IF SUBSTRING_INDEX(CURRENT_USER(), '@', 1) <> OLD.created_by THEN
+--     SIGNAL SQLSTATE '45000'
+--       SET MESSAGE_TEXT = 'Only the coach who created this match can delete it.';
+--   END IF;
+-- END$$
+
+-- DELIMITER ;
+
 DELIMITER $$
 
-CREATE TRIGGER trg_only_creator_delete
-BEFORE DELETE ON ChessMatch
-FOR EACH ROW
+CREATE PROCEDURE DeleteMatchByCoach (
+    IN p_match_id INT,
+    IN p_coach_username VARCHAR(50)
+)
 BEGIN
-  IF SUBSTRING_INDEX(CURRENT_USER(), '@', 1) <> OLD.created_by THEN
+  DECLARE match_creator VARCHAR(50);
+
+  SELECT created_by INTO match_creator
+  FROM ChessMatch
+  WHERE match_id = p_match_id;
+
+  IF match_creator IS NULL THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Match does not exist.';
+  END IF;
+
+  IF match_creator <> p_coach_username THEN
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Only the coach who created this match can delete it.';
   END IF;
+
+  DELETE FROM ChessMatch
+  WHERE match_id = p_match_id;
 END$$
 
 DELIMITER ;
@@ -674,6 +703,8 @@ BEGIN
   WHERE times_played = max_played;
 END$$
 DELIMITER ;
+
+
 
 
 

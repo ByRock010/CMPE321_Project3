@@ -191,7 +191,40 @@ def view_player_stats(request):
 
 
 def delete_match(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Match deletion coming soon'})
+    if request.method == "POST":
+        match_id = request.POST.get("match_id")
+        coach_username = request.session.get("username")
+
+        if not coach_username:
+            messages.error(request, "You must be logged in as a coach to delete a match.")
+            return redirect("login")
+
+        try:
+            match_id = int(match_id)
+        except (TypeError, ValueError):
+            messages.error(request, "Invalid match ID.")
+            return render(request, 'chess/delete_match.html')
+
+        try:
+            with connection.cursor() as cursor:
+                # Check if this coach created the match
+                cursor.execute("""
+                    SELECT COUNT(*) FROM ChessMatch
+                    WHERE match_id = %s AND created_by = %s
+                """, [match_id, coach_username])
+                count = cursor.fetchone()[0]
+
+                if count == 0:
+                    messages.error(request, "You can only delete matches you created.")
+                else:
+                    cursor.execute("DELETE FROM ChessMatch WHERE match_id = %s", [match_id])
+                    messages.success(request, "Match deleted successfully!")
+
+        except Exception as e:
+            messages.error(request, f"Deletion failed: {str(e)}")
+
+    return render(request, 'chess/delete_match.html')
+
 
 def view_available_halls(request):
     if request.session.get("role") != "Coach":
