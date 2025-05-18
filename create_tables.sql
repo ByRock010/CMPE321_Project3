@@ -412,20 +412,65 @@ DELIMITER ;
 
 
 
--- Only the assigned arbiter may rate
-DELIMITER $$
-CREATE TRIGGER trg_only_assigned_arbiter
-BEFORE UPDATE ON ChessMatch
-FOR EACH ROW
+-- -- Only the assigned arbiter may rate
+-- DELIMITER $$
+-- CREATE TRIGGER trg_only_assigned_arbiter
+-- BEFORE UPDATE ON ChessMatch
+-- FOR EACH ROW
+-- BEGIN
+--   IF NEW.rating IS NOT NULL
+--      AND SUBSTRING_INDEX(CURRENT_USER(),'@',1) <> OLD.assigned_arbiter_username
+--   THEN
+--     SIGNAL SQLSTATE '45000'
+--       SET MESSAGE_TEXT = 'Only the assigned arbiter can submit a rating.';
+--   END IF;
+-- END$$
+-- DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SubmitRating (
+    IN p_match_id INT,
+    IN p_rating INT,
+    IN p_arbiter_username VARCHAR(50)
+)
 BEGIN
-  IF NEW.rating IS NOT NULL
-     AND SUBSTRING_INDEX(CURRENT_USER(),'@',1) <> OLD.assigned_arbiter_username
-  THEN
+  -- Check: only assigned arbiter can rate
+  IF NOT EXISTS (
+    SELECT 1 FROM ChessMatch
+    WHERE match_id = p_match_id
+      AND assigned_arbiter_username = p_arbiter_username
+  ) THEN
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Only the assigned arbiter can submit a rating.';
   END IF;
-END$$
+
+  -- Check: match already rated
+  IF EXISTS (
+    SELECT 1 FROM ChessMatch
+    WHERE match_id = p_match_id AND rating IS NOT NULL
+  ) THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Match has already been rated.';
+  END IF;
+
+  -- Check: match date in past
+  IF EXISTS (
+    SELECT 1 FROM ChessMatch
+    WHERE match_id = p_match_id AND match_date > CURDATE()
+  ) THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Cannot rate match before its scheduled date.';
+  END IF;
+
+  -- All good → update
+  UPDATE ChessMatch
+  SET rating = p_rating
+  WHERE match_id = p_match_id;
+END;
+//
 DELIMITER ;
+
+
 
 
 -- Enforce both players really belong to their teams

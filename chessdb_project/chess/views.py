@@ -193,10 +193,59 @@ def view_available_halls(request):
     return render(request, 'chess/placeholder.html', {'message': 'Available halls will be listed here'})
 
 def view_assigned_matches(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Assigned matches will be shown here'})
+    username = request.session.get("username")
+    role = request.session.get("role")
+
+    if not username or role != "Arbiter":
+        messages.error(request, "You must be logged in as an arbiter.")
+        return redirect('login')
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.callproc('GetAssignedMatches', [username])
+            rows = cursor.fetchall()
+            assigned_matches = [dict(zip([col[0] for col in cursor.description], row)) for row in rows]
+
+    except Exception as e:
+        messages.error(request, f"Failed to retrieve matches: {str(e)}")
+        assigned_matches = []
+
+    return render(request, 'chess/assigned_matches.html', {'matches': assigned_matches})
+
+
+from django.db import transaction
 
 def submit_rating(request):
-    return render(request, 'chess/placeholder.html', {'message': 'Rating submission form coming soon'})
+    username = request.session.get("username")
+    role = request.session.get("role")
+
+    if not username or role != "Arbiter":
+        messages.error(request, "You must be logged in as an arbiter.")
+        return redirect('login')
+
+    if request.method == "POST":
+        match_id = request.POST.get("match_id")
+        rating = request.POST.get("rating")
+
+        try:
+            match_id = int(match_id)
+            rating = int(rating)
+            if rating < 1 or rating > 10:
+                raise ValueError("Rating must be between 1 and 10")
+
+            print("Calling stored procedure SubmitRating with:", match_id, rating, username)
+
+            with connection.cursor() as cursor:
+                cursor.callproc("SubmitRating", [match_id, rating, username])
+
+            messages.success(request, "Rating submitted successfully!")
+            return redirect("view_assigned_matches")
+
+        except Exception as e:
+            messages.error(request, f"Submission failed: {str(e)}")
+
+    return render(request, 'chess/submit_rating.html')
+
 
 def view_rating_stats(request):
     return render(request, 'chess/placeholder.html', {'message': 'Your average ratings and match count will be here'})
