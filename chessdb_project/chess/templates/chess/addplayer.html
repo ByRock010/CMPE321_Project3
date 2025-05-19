@@ -30,6 +30,13 @@
         <label>Title ID (must exist in Title table):</label><br>
         <input type="number" name="title_id" required><br><br>
 
+        <label>Choose Team:</label><br>
+        <select name="team_id" required>
+            {% for team in teams %}
+                <option value="{{ team.team_id }}">{{ team.team_id }} - {{ team.team_name }}</option>
+            {% endfor %}
+        </select><br><br>
+
         <input type="submit" value="Add Player">
     </form>
     <a href="{% url 'dbmanagers_home' %}">Back to DB Manager Home</a>

@@ -57,6 +57,16 @@ def create_match(request):
             # data['creator'] = request.user.username  # use the logged-in coach
             try:
                 with connection.cursor() as cur:
+                    # ✅ Hall-table validation check
+                    cur.execute("""
+                        SELECT 1 FROM ChessTable
+                        WHERE table_id = %s AND hall_id = %s
+                    """, [data['table_id'], data['hall_id']])
+                    if not cur.fetchone():
+                        messages.error(request, "Selected table does not belong to the selected hall.")
+                        return render(request, 'chess/create_match.html', {'form': form})
+
+                    # Proceed only if the above passes
                     cur.callproc("create_match", [
                         data['white_player'],
                         data['white_team_id'],
@@ -66,7 +76,6 @@ def create_match(request):
                         data['hall_id'],
                         data['table_id'],
                         data['arbiter_username'],
-                        # data['creator'],
                         request.session.get('username')
                     ])
                 messages.success(request, "Match created successfully!")
@@ -173,7 +182,13 @@ def coach_unassigned_matches(request):
         cur.execute("""
             SELECT match_id, match_date, time_slot
             FROM ChessMatch
-            WHERE black_player IS NULL AND created_by = %s
+            WHERE black_player IS NULL 
+              AND black_player_team_id IN (
+                  SELECT team_id
+                  FROM Coach_Team_Agreement
+                  WHERE coach_username = %s
+                    AND CURDATE() BETWEEN contract_start AND contract_finish
+              )
             ORDER BY match_date, time_slot
         """, [username])
         matches = [dict(zip([col[0] for col in cur.description], row)) for row in cur.fetchall()]
@@ -442,16 +457,25 @@ def add_player(request):
         elo = request.POST.get('elo_rating')
         fide_id = request.POST.get('fide_id')
         title = request.POST.get('title_id')
+        team_id = request.POST.get('team_id')
 
-        with connection.cursor() as cursor:
-            cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Player'])
-            cursor.callproc('AddPlayer', [username, date_of_birth, elo, fide_id, title])
-            result = cursor.fetchone()
-            if not result:
-                messages.error(request, "ERROR")
-                    
-                    
-    return render(request, 'chess/addplayer.html')
+        try:
+            with connection.cursor() as cursor:
+                cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Player'])
+                cursor.callproc('AddPlayer', [username, date_of_birth, elo, fide_id, title])
+                cursor.execute("INSERT INTO Player_Team (player_username, team_id) VALUES (%s, %s)", [username, team_id])
+                messages.success(request, "Player added and assigned to team successfully!")
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+
+    # Fetch team list regardless of POST or GET
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT team_id, team_name FROM Team ORDER BY team_id")
+        teams = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
+
+    return render(request, 'chess/addplayer.html', {'teams': teams})
+
+
 
 
 
@@ -462,15 +486,40 @@ def add_coach(request):
         name = request.POST.get('name')
         surname = request.POST.get('surname')
         nationality = request.POST.get('nationality')
-        
-        with connection.cursor() as cursor:
-            cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Coach'])
-            cursor.callproc('AddCoach', [username])
-            result = cursor.fetchone()
-            if not result:
-                messages.error(request, "ERROR")
-                    
-    return render(request, 'chess/addcoach.html')
+        date_of_birth = request.POST.get('date_of_birth')
+        team_id = request.POST.get('team_id')
+
+        try:
+            with connection.cursor() as cursor:
+                # Add coach as a user
+                cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Coach'])
+                cursor.callproc('AddCoach', [username])
+
+                # Add agreement with this team
+                cursor.execute("""
+                    INSERT INTO Coach_Team_Agreement (coach_username, team_id, contract_start, contract_finish)
+                    VALUES (%s, %s, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 YEAR))
+                """, [username, team_id])
+
+                messages.success(request, "Coach added and assigned to team successfully!")
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+
+    # Fetch only teams that are not already assigned to a coach
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT t.team_id, t.team_name
+            FROM Team t
+            WHERE t.team_id NOT IN (
+                SELECT team_id FROM Coach_Team_Agreement
+                WHERE CURDATE() BETWEEN contract_start AND contract_finish
+            )
+            ORDER BY t.team_id
+        """)
+        teams = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
+
+    return render(request, 'chess/addcoach.html', {'teams': teams})
+
 
 def add_arbiter(request):
     if request.method == "POST":
