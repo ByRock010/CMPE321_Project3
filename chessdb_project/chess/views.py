@@ -84,17 +84,76 @@ def assign_black_player(request, match_id):
         form = AssignBlackForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
+            coach_username = request.session.get('username')
+
+            if not coach_username:
+                messages.error(request, "You must be logged in as a coach.")
+                return redirect('login')
+
             try:
                 with connection.cursor() as cur:
+                    # Step 1: Get match info
+                    cur.execute("""
+                        SELECT black_player_team_id, match_date, time_slot
+                        FROM ChessMatch
+                        WHERE match_id = %s
+                    """, [match_id])
+                    result = cur.fetchone()
+
+                    if not result:
+                        messages.error(request, "Match not found.")
+                        return redirect('assign_black', match_id=match_id)
+
+                    match_team_id, match_date, time_slot = result
+
+                    if match_team_id != data['black_team_id']:
+                        messages.error(request, "This match does not use the selected team as the black side.")
+                        return redirect('assign_black', match_id=match_id)
+
+                    # Step 2: Check coach's contract
+                    cur.execute("""
+                        SELECT 1 FROM Coach_Team_Agreement
+                        WHERE coach_username = %s AND team_id = %s
+                          AND CURDATE() BETWEEN contract_start AND contract_finish
+                    """, [coach_username, data['black_team_id']])
+                    if not cur.fetchone():
+                        messages.error(request, "You do not have an active contract with this team.")
+                        return redirect('assign_black', match_id=match_id)
+
+                    # Step 3: Check if player is from the same team
+                    cur.execute("""
+                        SELECT team_id FROM Player_Team
+                        WHERE player_username = %s
+                    """, [data['black_player']])
+                    player_team_row = cur.fetchone()
+
+                    if not player_team_row or player_team_row[0] != data['black_team_id']:
+                        messages.error(request, "Selected player does not belong to this team.")
+                        return redirect('assign_black', match_id=match_id)
+
+                    # Step 4: Check if player is available at that date and time
+                    cur.execute("""
+                        SELECT 1 FROM ChessMatch
+                        WHERE (white_player = %s OR black_player = %s)
+                          AND match_date = %s
+                          AND time_slot = %s
+                    """, [data['black_player'], data['black_player'], match_date, time_slot])
+                    if cur.fetchone():
+                        messages.error(request, "This player already has a match at the same time.")
+                        return redirect('assign_black', match_id=match_id)
+
+                    # Step 5: Call the stored procedure to assign
                     cur.callproc("assign_black_player", [
                         match_id,
                         data['black_player'],
                         data['black_team_id']
                     ])
-                messages.success(request, "Black player assigned successfully!")
-                return redirect('match_detail', match_id=match_id)
+                    messages.success(request, "Black player assigned successfully!")
+                    return redirect('match_detail', match_id=match_id)
+
             except Exception as e:
                 messages.error(request, f"Error: {str(e)}")
+
     else:
         form = AssignBlackForm()
 
@@ -102,6 +161,27 @@ def assign_black_player(request, match_id):
         'form': form,
         'match_id': match_id
     })
+
+
+def coach_unassigned_matches(request):
+    username = request.session.get("username")
+    if not username:
+        messages.error(request, "You must be logged in as a coach.")
+        return redirect("login")
+
+    with connection.cursor() as cur:
+        cur.execute("""
+            SELECT match_id, match_date, time_slot
+            FROM ChessMatch
+            WHERE black_player IS NULL AND created_by = %s
+            ORDER BY match_date, time_slot
+        """, [username])
+        matches = [dict(zip([col[0] for col in cur.description], row)) for row in cur.fetchall()]
+
+    return render(request, 'chess/coach_unassigned_matches.html', {'matches': matches})
+
+
+
 
 
 def homepage(request):

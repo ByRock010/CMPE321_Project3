@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Assign Black Players</title></head>
+<body>
+  <h1>Unassigned Matches</h1>
+  <ul>
+    {% for match in matches %}
+      <li>
+        Match {{ match.match_id }} - {{ match.match_date }} Slot {{ match.time_slot }}
+        → <a href="{% url 'assign_black' match.match_id %}">Assign Black Player</a>
+      </li>
+    {% empty %}
+      <li>No unassigned matches found.</li>
+    {% endfor %}
+  </ul>
+  <p><a href="{% url 'coaches_home' %}">← Back to Coach Dashboard</a></p>
+</body>
+</html>
