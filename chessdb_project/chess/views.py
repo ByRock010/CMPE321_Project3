@@ -7,6 +7,23 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 
 
+import re
+from django.core.exceptions import ValidationError
+
+def validate_password_strength(password):
+    if len(password) < 8:
+        raise ValidationError("Password must be at least 8 characters.")
+    if not re.search(r'[A-Z]', password):
+        raise ValidationError("Password must include an uppercase letter.")
+    if not re.search(r'[a-z]', password):
+        raise ValidationError("Password must include a lowercase letter.")
+    if not re.search(r'[0-9]', password):
+        raise ValidationError("Password must include a digit.")
+    if not re.search(r'[^A-Za-z0-9]', password):
+        raise ValidationError("Password must include a special character.")
+
+
+
 class AssignBlackForm(forms.Form):    # ilk kez form kullandım la bilmiyodum böyle bi şey oldğunu
     black_player = forms.CharField(max_length=50)
     black_team_id = forms.IntegerField()
@@ -396,19 +413,20 @@ def submit_rating(request):
             if rating < 1 or rating > 10:
                 raise ValueError("Rating must be between 1 and 10")
 
-            print("Calling stored procedure SubmitRating with:", match_id, rating, username)
-
             with connection.cursor() as cursor:
+                print("Calling SubmitRating with:", match_id, rating, username)
                 cursor.callproc("SubmitRating", [match_id, rating, username])
 
             messages.success(request, "Rating submitted successfully!")
-            return redirect("view_assigned_matches")
+            return redirect("submit_rating")
 
         except Exception as e:
-            print("Exception during rating:", str(e))  # ADD THIS
+            print("Rating submission failed:", str(e))
             messages.error(request, f"Submission failed: {str(e)}")
+            return redirect("submit_rating")  # Redirect to avoid re-posting on refresh
 
     return render(request, 'chess/submit_rating.html')
+
 
 
 
@@ -447,26 +465,35 @@ def view_rating_stats(request):
 
 
 def add_player(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT team_id, team_name FROM Team ORDER BY team_id")
+        teams = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
+
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        name = request.POST.get('name')
-        surname = request.POST.get('surname')
-        nationality = request.POST.get('nationality')
-        date_of_birth = request.POST.get('date_of_birth')
-        elo = request.POST.get('elo_rating')
-        fide_id = request.POST.get('fide_id')
-        title = request.POST.get('title_id')
-        team_id = request.POST.get('team_id')
+        name = request.POST.get("name")
+        surname = request.POST.get("surname")
+        nationality = request.POST.get("nationality")
+        date_of_birth = request.POST.get("date_of_birth")
+        elo = request.POST.get("elo_rating")
+        fide_id = request.POST.get("fide_id")
+        title = request.POST.get("title_id")
+        team_id = request.POST.get("team_id")
 
         try:
+            validate_password_strength(password)
             with connection.cursor() as cursor:
                 cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Player'])
                 cursor.callproc('AddPlayer', [username, date_of_birth, elo, fide_id, title])
                 cursor.execute("INSERT INTO Player_Team (player_username, team_id) VALUES (%s, %s)", [username, team_id])
                 messages.success(request, "Player added and assigned to team successfully!")
+        except ValidationError as ve:
+            messages.error(request, str(ve))
         except Exception as e:
             messages.error(request, f"Error: {str(e)}")
+
+    return render(request, 'chess/addplayer.html', {'teams': teams})
 
     # Fetch team list regardless of POST or GET
     with connection.cursor() as cursor:
@@ -480,32 +507,6 @@ def add_player(request):
 
 
 def add_coach(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        name = request.POST.get('name')
-        surname = request.POST.get('surname')
-        nationality = request.POST.get('nationality')
-        date_of_birth = request.POST.get('date_of_birth')
-        team_id = request.POST.get('team_id')
-
-        try:
-            with connection.cursor() as cursor:
-                # Add coach as a user
-                cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Coach'])
-                cursor.callproc('AddCoach', [username])
-
-                # Add agreement with this team
-                cursor.execute("""
-                    INSERT INTO Coach_Team_Agreement (coach_username, team_id, contract_start, contract_finish)
-                    VALUES (%s, %s, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 YEAR))
-                """, [username, team_id])
-
-                messages.success(request, "Coach added and assigned to team successfully!")
-        except Exception as e:
-            messages.error(request, f"Error: {str(e)}")
-
-    # Fetch only teams that are not already assigned to a coach
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT t.team_id, t.team_name
@@ -518,25 +519,55 @@ def add_coach(request):
         """)
         teams = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
 
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        name = request.POST.get("name")
+        surname = request.POST.get("surname")
+        nationality = request.POST.get("nationality")
+        team_id = request.POST.get("team_id")
+
+        try:
+            validate_password_strength(password)
+            with connection.cursor() as cursor:
+                cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Coach'])
+                cursor.callproc('AddCoach', [username])
+                cursor.execute("""
+                    INSERT INTO Coach_Team_Agreement (coach_username, team_id, contract_start, contract_finish)
+                    VALUES (%s, %s, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 YEAR))
+                """, [username, team_id])
+                messages.success(request, "Coach added and assigned to team successfully!")
+        except ValidationError as ve:
+            messages.error(request, str(ve))
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+
     return render(request, 'chess/addcoach.html', {'teams': teams})
+
 
 
 def add_arbiter(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        name = request.POST.get('name')
-        surname = request.POST.get('surname')
-        nationality = request.POST.get('nationality')
-        experience = request.POST.get('experience')
-        
-        with connection.cursor() as cursor:
-            cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Arbiter'])
-            cursor.callproc('AddArbiter', [username, experience])
-            result = cursor.fetchone()
-            if not result:
-                messages.error(request, "ERROR")
+        name = request.POST.get("name")
+        surname = request.POST.get("surname")
+        nationality = request.POST.get("nationality")
+        experience = request.POST.get("experience")
+
+        try:
+            validate_password_strength(password)
+            with connection.cursor() as cursor:
+                cursor.callproc('AddUser', [username, password, name, surname, nationality, 'Arbiter'])
+                cursor.callproc('AddArbiter', [username, experience])
+                messages.success(request, "Arbiter added successfully!")
+        except ValidationError as ve:
+            messages.error(request, str(ve))
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+
     return render(request, 'chess/addarbiter.html')
+
 
 def rename_hall(request):
     if request.session.get("role") != "Admin":

@@ -351,10 +351,10 @@ BEFORE INSERT ON User
 FOR EACH ROW
 BEGIN
   IF CHAR_LENGTH(NEW.password_hash) < 8
-     OR NEW.password_hash NOT REGEXP '[A-Z]'
-     OR NEW.password_hash NOT REGEXP '[a-z]'
-     OR NEW.password_hash NOT REGEXP '[0-9]'
-     OR NEW.password_hash NOT REGEXP '[^A-Za-z0-9]' THEN
+     OR BINARY NEW.password_hash NOT REGEXP '[A-Z]'
+     OR BINARY NEW.password_hash NOT REGEXP '[a-z]'
+     OR BINARY NEW.password_hash NOT REGEXP '[0-9]'
+     OR BINARY NEW.password_hash NOT REGEXP '[^A-Za-z0-9]' THEN
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Password must be ≥8 chars with upper, lower, digit & special.';
   END IF;
@@ -373,10 +373,10 @@ FOR EACH ROW
 BEGIN
   IF NEW.password_hash <> OLD.password_hash THEN
     IF CHAR_LENGTH(NEW.password_hash) < 8
-       OR NEW.password_hash NOT REGEXP '[A-Z]'
-       OR NEW.password_hash NOT REGEXP '[a-z]'
-       OR NEW.password_hash NOT REGEXP '[0-9]'
-       OR NEW.password_hash NOT REGEXP '[^A-Za-z0-9]' THEN
+       OR BINARY NEW.password_hash NOT REGEXP '[A-Z]'
+       OR BINARY NEW.password_hash NOT REGEXP '[a-z]'
+       OR BINARY NEW.password_hash NOT REGEXP '[0-9]'
+       OR BINARY NEW.password_hash NOT REGEXP '[^A-Za-z0-9]' THEN
       SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Password must be ≥8 chars with upper, lower, digit & special.';
     END IF;
@@ -579,45 +579,41 @@ CREATE PROCEDURE assign_black_player (
     IN p_black_team_id INT
 )
 BEGIN
-    DECLARE conflict INT DEFAULT 0;
-    DECLARE player_valid INT DEFAULT 0;
     DECLARE match_date_val DATE;
     DECLARE match_time_slot INT;
 
-    -- Get match date and time_slot
+    -- Step 1: Get match date and time_slot
     SELECT match_date, time_slot INTO match_date_val, match_time_slot
     FROM ChessMatch WHERE match_id = p_match_id;
 
-    -- Check time conflict for black player
-    SELECT 1 INTO conflict
-    FROM ChessMatch
-    WHERE match_id != p_match_id
-      AND match_date = match_date_val
-      AND time_slot IN (match_time_slot, match_time_slot + 1)
-      AND (
-        white_player = p_black_player OR
-        black_player = p_black_player
-      )
-    LIMIT 1;
-
-    IF conflict IS NOT NULL THEN
+    -- Step 2: Check time conflict for black player (2-slot span)
+    IF EXISTS (
+        SELECT 1
+        FROM ChessMatch
+        WHERE match_id != p_match_id
+          AND match_date = match_date_val
+          AND time_slot IN (match_time_slot, match_time_slot + 1)
+          AND (
+              white_player = p_black_player OR
+              black_player = p_black_player
+          )
+    ) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Conflict: player is already in a match during this time.';
     END IF;
 
-    -- Check if the player belongs to the specified team
-    SELECT 1 INTO player_valid
-    FROM Player_Team
-    WHERE player_username = p_black_player
-      AND team_id = p_black_team_id
-    LIMIT 1;
-
-    IF player_valid IS NULL THEN
+    -- Step 3: Check if the player belongs to the specified team
+    IF NOT EXISTS (
+        SELECT 1
+        FROM Player_Team
+        WHERE player_username = p_black_player
+          AND team_id = p_black_team_id
+    ) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Player does not belong to the given team.';
     END IF;
 
-    -- Assign black player if all checks pass
+    -- Step 4: Assign black player if all checks pass
     UPDATE ChessMatch
     SET black_player = p_black_player,
         black_player_team_id = p_black_team_id
@@ -625,6 +621,7 @@ BEGIN
 END$$
 
 DELIMITER ;
+
 
 
 -- Opponents per player (example proc)

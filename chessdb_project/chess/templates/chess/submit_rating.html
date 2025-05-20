@@ -1,5 +1,13 @@
 {% block content %}
   <h2>Submit Rating</h2>
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li style="color: red;">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
   <form method="post">
     {% csrf_token %}
     <label for="match_id">Match ID:</label>
