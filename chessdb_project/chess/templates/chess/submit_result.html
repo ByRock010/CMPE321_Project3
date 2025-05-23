@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head><title>Submit Match Result</title></head>
+<body>
+  <h1>Submit Match Result</h1>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <label for="match_id">Match ID:</label>
+    <input type="number" name="match_id" required><br><br>
+
+    <label for="result">Result:</label>
+    <select name="result" required>
+      <option value="">Select result</option>
+      <option value="White Wins">White Wins</option>
+      <option value="Black Wins">Black Wins</option>
+      <option value="Draw">Draw</option>
+    </select><br><br>
+
+    <input type="submit" value="Submit Result">
+  </form>
+
+  <p><a href="{% url 'arbiters_home' %}">← Back to Arbiter Dashboard</a></p>
+</body>
+</html>

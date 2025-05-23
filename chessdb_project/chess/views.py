@@ -602,3 +602,54 @@ def rename_hall(request):
 
     return render(request, 'chess/rename_hall.html')
 
+
+class MatchResultForm(forms.Form):
+    match_id = forms.IntegerField()
+    result = forms.ChoiceField(choices=[
+        ('White Wins', 'White Wins'),
+        ('Black Wins', 'Black Wins'),
+        ('Draw', 'Draw')
+    ])
+
+
+
+def submit_result(request):
+    username = request.session.get("username")
+    role = request.session.get("role")
+
+    if not username or role != "Arbiter":
+        messages.error(request, "Only arbiters can submit results.")
+        return redirect("login")
+
+    if request.method == "POST":
+        form = MatchResultForm(request.POST)
+        if form.is_valid():
+            match_id = form.cleaned_data['match_id']
+            result = form.cleaned_data['result']
+
+            try:
+                with connection.cursor() as cursor:
+                    # Ensure arbiter is assigned to the match
+                    cursor.execute("""
+                        SELECT 1 FROM ChessMatch
+                        WHERE match_id = %s AND assigned_arbiter_username = %s
+                    """, [match_id, username])
+                    if not cursor.fetchone():
+                        messages.error(request, "You are not assigned to this match.")
+                        return redirect("submit_result")
+
+                    # Update the result
+                    cursor.execute("""
+                        UPDATE ChessMatch
+                        SET result = %s
+                        WHERE match_id = %s
+                    """, [result, match_id])
+                    messages.success(request, "Result submitted successfully!")
+
+            except Exception as e:
+                messages.error(request, f"Error: {str(e)}")
+
+    else:
+        form = MatchResultForm()
+
+    return render(request, 'chess/submit_result.html', {'form': form})
