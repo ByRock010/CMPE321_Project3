@@ -1,11 +1,3 @@
--- CREATE TABLE User ( 
--- username VARCHAR(50) PRIMARY KEY, 
--- password_hash VARCHAR(100) NOT NULL, -- İsmini password_hash yaptım
--- name VARCHAR(50) , 
--- surname VARCHAR(50) , 
--- nationality VARCHAR(50) ,
--- role ENUM('Player', 'Coach', 'Arbiter', 'Admin') NOT NULL  -- BURA YENİ
--- ); 
 CREATE TABLE User (
   username VARCHAR(50) PRIMARY KEY,
   password_hash VARCHAR(100) NOT NULL,
@@ -524,20 +516,6 @@ END$$
 DELIMITER ;
 
 
--- -- Track “who created” each match & restrict deletions to that coach
--- DELIMITER $$
-
--- CREATE TRIGGER trg_only_creator_delete
--- BEFORE DELETE ON ChessMatch
--- FOR EACH ROW
--- BEGIN
---   IF SUBSTRING_INDEX(CURRENT_USER(), '@', 1) <> OLD.created_by THEN
---     SIGNAL SQLSTATE '45000'
---       SET MESSAGE_TEXT = 'Only the coach who created this match can delete it.';
---   END IF;
--- END$$
-
--- DELIMITER ;
 
 DELIMITER $$
 
