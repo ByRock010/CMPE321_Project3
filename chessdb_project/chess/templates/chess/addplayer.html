@@ -36,8 +36,13 @@
         <label>FIDE ID (must be unique):</label><br>
         <input type="text" name="fide_id" required><br>
 
-        <label>Title ID (must exist in Title table):</label><br>
-        <input type="number" name="title_id" required><br><br>
+        <label>Choose Title:</label><br>
+        <select name="title_id" required>
+            {% for title in titles %}
+                <option value="{{ title.title_id }}">{{ title.title_id }} - {{ title.title_name }}</option>
+            {% endfor %}
+        </select><br><br>
+
 
         <label>Choose Team:</label><br>
         <select name="team_id" required>

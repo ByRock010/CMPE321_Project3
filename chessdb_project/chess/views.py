@@ -175,7 +175,7 @@ def assign_black_player(request, match_id):
                         data['black_team_id']
                     ])
                     messages.success(request, "Black player assigned successfully!")
-                    return redirect('match_detail', match_id=match_id)
+                    return redirect('assign_black', match_id=match_id)
 
             except Exception as e:
                 messages.error(request, f"Error: {str(e)}")
@@ -469,6 +469,9 @@ def add_player(request):
         cursor.execute("SELECT team_id, team_name FROM Team ORDER BY team_id")
         teams = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
 
+        cursor.execute("SELECT title_id, title_name FROM Title ORDER BY title_id")
+        titles = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
+
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -493,14 +496,8 @@ def add_player(request):
         except Exception as e:
             messages.error(request, f"Error: {str(e)}")
 
-    return render(request, 'chess/addplayer.html', {'teams': teams})
+    return render(request, 'chess/addplayer.html', {'teams': teams, 'titles': titles})
 
-    # Fetch team list regardless of POST or GET
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT team_id, team_name FROM Team ORDER BY team_id")
-        teams = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
-
-    return render(request, 'chess/addplayer.html', {'teams': teams})
 
 
 

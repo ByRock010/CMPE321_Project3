@@ -1,11 +1,20 @@
-CREATE TABLE User ( 
-username VARCHAR(50) PRIMARY KEY, 
-password_hash VARCHAR(100) NOT NULL, -- İsmini password_hash yaptım
-name VARCHAR(50) , 
-surname VARCHAR(50) , 
-nationality VARCHAR(50) ,
-role ENUM('Player', 'Coach', 'Arbiter', 'Admin') NOT NULL  -- BURA YENİ
-); 
+-- CREATE TABLE User ( 
+-- username VARCHAR(50) PRIMARY KEY, 
+-- password_hash VARCHAR(100) NOT NULL, -- İsmini password_hash yaptım
+-- name VARCHAR(50) , 
+-- surname VARCHAR(50) , 
+-- nationality VARCHAR(50) ,
+-- role ENUM('Player', 'Coach', 'Arbiter', 'Admin') NOT NULL  -- BURA YENİ
+-- ); 
+CREATE TABLE User (
+  username VARCHAR(50) PRIMARY KEY,
+  password_hash VARCHAR(100) NOT NULL,
+  name VARCHAR(50),
+  surname VARCHAR(50),
+  nationality VARCHAR(50),
+  role ENUM('Player', 'Coach', 'Arbiter', 'Admin') NOT NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
 CREATE TABLE Admin(
   username VARCHAR(50) PRIMARY KEY,
   FOREIGN KEY (username) REFERENCES USER(username));
@@ -204,6 +213,19 @@ DELIMITER ;
 
 
 
+DELIMITER $$
+
+CREATE TRIGGER trg_no_start_in_slot_4
+BEFORE INSERT ON ChessMatch
+FOR EACH ROW
+BEGIN
+  IF NEW.time_slot = 4 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Matches cannot start at slot 4 as they require two consecutive slots.';
+  END IF;
+END$$
+
+DELIMITER ;
 
 
 
@@ -305,19 +327,6 @@ END$$
 DELIMITER ;
 
 
-DELIMITER $$
-
-CREATE TRIGGER trg_rating_only_after_match_date
-BEFORE UPDATE ON ChessMatch
-FOR EACH ROW
-BEGIN
-  IF NEW.rating IS NOT NULL AND NEW.match_date > CURDATE() THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Cannot rate a match before its scheduled date.';
-  END IF;
-END$$
-
-DELIMITER ;
 
 
 DELIMITER $$
@@ -351,10 +360,11 @@ BEFORE INSERT ON User
 FOR EACH ROW
 BEGIN
   IF CHAR_LENGTH(NEW.password_hash) < 8
-     OR BINARY NEW.password_hash NOT REGEXP '[A-Z]'
-     OR BINARY NEW.password_hash NOT REGEXP '[a-z]'
-     OR BINARY NEW.password_hash NOT REGEXP '[0-9]'
-     OR BINARY NEW.password_hash NOT REGEXP '[^A-Za-z0-9]' THEN
+     OR NOT REGEXP_LIKE(CAST(NEW.password_hash AS CHAR CHARACTER SET utf8mb4), '[A-Z]')
+     OR NOT REGEXP_LIKE(CAST(NEW.password_hash AS CHAR CHARACTER SET utf8mb4), '[a-z]')
+     OR NOT REGEXP_LIKE(CAST(NEW.password_hash AS CHAR CHARACTER SET utf8mb4), '[0-9]')
+     OR NOT REGEXP_LIKE(CAST(NEW.password_hash AS CHAR CHARACTER SET utf8mb4), '[^A-Za-z0-9]')
+  THEN
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Password must be ≥8 chars with upper, lower, digit & special.';
   END IF;
@@ -365,6 +375,7 @@ END$$
 DELIMITER ;
 
 
+
 DELIMITER $$
 
 CREATE TRIGGER trg_user_password_policy_upd
@@ -373,10 +384,11 @@ FOR EACH ROW
 BEGIN
   IF NEW.password_hash <> OLD.password_hash THEN
     IF CHAR_LENGTH(NEW.password_hash) < 8
-       OR BINARY NEW.password_hash NOT REGEXP '[A-Z]'
-       OR BINARY NEW.password_hash NOT REGEXP '[a-z]'
-       OR BINARY NEW.password_hash NOT REGEXP '[0-9]'
-       OR BINARY NEW.password_hash NOT REGEXP '[^A-Za-z0-9]' THEN
+       OR NOT REGEXP_LIKE(CAST(NEW.password_hash AS CHAR CHARACTER SET utf8mb4), '[A-Z]')
+       OR NOT REGEXP_LIKE(CAST(NEW.password_hash AS CHAR CHARACTER SET utf8mb4), '[a-z]')
+       OR NOT REGEXP_LIKE(CAST(NEW.password_hash AS CHAR CHARACTER SET utf8mb4), '[0-9]')
+       OR NOT REGEXP_LIKE(CAST(NEW.password_hash AS CHAR CHARACTER SET utf8mb4), '[^A-Za-z0-9]')
+    THEN
       SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Password must be ≥8 chars with upper, lower, digit & special.';
     END IF;
@@ -389,22 +401,10 @@ DELIMITER ;
 
 
 
--- -- Only the assigned arbiter may rate
--- DELIMITER $$
--- CREATE TRIGGER trg_only_assigned_arbiter
--- BEFORE UPDATE ON ChessMatch
--- FOR EACH ROW
--- BEGIN
---   IF NEW.rating IS NOT NULL
---      AND SUBSTRING_INDEX(CURRENT_USER(),'@',1) <> OLD.assigned_arbiter_username
---   THEN
---     SIGNAL SQLSTATE '45000'
---       SET MESSAGE_TEXT = 'Only the assigned arbiter can submit a rating.';
---   END IF;
--- END$$
--- DELIMITER ;
+
 
 DELIMITER //
+
 CREATE PROCEDURE SubmitRating (
     IN p_match_id INT,
     IN p_rating INT,
@@ -430,13 +430,13 @@ BEGIN
       SET MESSAGE_TEXT = 'Match has already been rated.';
   END IF;
 
-  -- Check: match date in past
+  -- ✅ Check: match must have result
   IF EXISTS (
     SELECT 1 FROM ChessMatch
-    WHERE match_id = p_match_id AND match_date > CURDATE()
+    WHERE match_id = p_match_id AND result IS NULL
   ) THEN
     SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Cannot rate match before its scheduled date.';
+      SET MESSAGE_TEXT = 'Cannot rate a match before a result has been submitted.';
   END IF;
 
   -- All good → update
@@ -445,8 +445,48 @@ BEGIN
   WHERE match_id = p_match_id;
 END;
 //
+
 DELIMITER ;
 
+
+DELIMITER $$
+
+CREATE PROCEDURE create_match (
+    IN p_white_player VARCHAR(50),
+    IN p_white_team_id INT,
+    IN p_black_team_id INT,
+    IN p_match_date DATE,
+    IN p_time_slot INT,
+    IN p_hall_id INT,
+    IN p_table_id INT,
+    IN p_arbiter_username VARCHAR(50),
+    IN p_creator_username VARCHAR(50)
+)
+BEGIN
+    INSERT INTO ChessMatch (
+        hall_id,
+        table_id,
+        white_player_team_id,
+        white_player,
+        black_player_team_id,
+        time_slot,
+        match_date,
+        assigned_arbiter_username,
+        created_by
+    ) VALUES (
+        p_hall_id,
+        p_table_id,
+        p_white_team_id,
+        p_white_player,
+        p_black_team_id,
+        p_time_slot,
+        p_match_date,
+        p_arbiter_username,
+        p_creator_username
+    );
+END$$
+
+DELIMITER ;
 
 
 

@@ -5,10 +5,13 @@
   <h1>Assign Black Player to Match {{ match_id }}</h1>
 
   {% if messages %}
-    {% for message in messages %}
-      <p>{{ message }}</p>
-    {% endfor %}
+    <ul>
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
   {% endif %}
+
 
   <form method="post">
     {% csrf_token %}
